@@ -13,7 +13,6 @@ public class BussService {
     @Autowired
     private BussMapper bussMapper;
 
-    /** 根据用户ID查流水 */
     public List<Buss> findByUid(Integer uid) {
         return bussMapper.findByUid(uid);
     }
