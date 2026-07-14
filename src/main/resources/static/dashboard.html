@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>华瑞银行 · 管理首页</title>
+    <!-- ECharts CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        :root {
+            --primary: #1e3a5f;
+            --primary-light: #2d5a87;
+            --accent: #c9a84c;
+            --accent-light: #e4c76b;
+            --bg: #f0f3f7;
+            --card: #ffffff;
+            --text: #1a202c;
+            --text-secondary: #64748b;
+            --border: #e2e8f0;
+            --success: #10b981;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --warning: #f59e0b;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03);
+            --shadow: 0 4px 12px rgba(0,0,0,0.06);
+            --shadow-lg: 0 12px 40px rgba(0,0,0,0.1);
+            --shadow-xl: 0 20px 60px rgba(0,0,0,0.15);
+            --radius: 14px;
+            --radius-sm: 10px;
+            --radius-lg: 20px;
+            --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', 'Microsoft YaHei', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            padding: 20px 24px 32px;
+            background-image:
+                radial-gradient(ellipse at 20% 0%, rgba(102,126,234,0.04) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 100%, rgba(201,168,76,0.04) 0%, transparent 50%);
+            min-height: 100vh;
+        }
+
+        /* ============ Welcome Banner ============ */
+        .welcome-banner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 26px 32px;
+            background: linear-gradient(135deg, #0f1d36 0%, #1a3350 40%, #1e3a5f 100%);
+            border-radius: var(--radius-lg);
+            color: #fff;
+            box-shadow: 0 8px 30px rgba(15,29,54,0.25);
+            margin-bottom: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+        .welcome-banner::before {
+            content: '';
+            position: absolute;
+            width: 300px; height: 300px;
+            background: radial-gradient(circle, rgba(201,168,76,0.12) 0%, transparent 70%);
+            top: -80px; right: -40px;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        .welcome-banner::after {
+            content: '';
+            position: absolute;
+            width: 200px; height: 200px;
+            background: radial-gradient(circle, rgba(100,160,220,0.15) 0%, transparent 70%);
+            bottom: -60px; left: 30%;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        .welcome-left { display: flex; align-items: center; gap: 18px; position: relative; z-index: 1; }
+        .welcome-avatar {
+            width: 54px; height: 54px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 6px 18px rgba(201,168,76,0.3);
+            flex-shrink: 0;
+        }
+        .welcome-left h1 { font-size: 21px; font-weight: 700; margin-bottom: 2px; letter-spacing: 0.3px; }
+        .welcome-left p { font-size: 12.5px; opacity: 0.65; letter-spacing: 0.2px; }
+        .welcome-right {
+            position: relative; z-index: 1;
+            display: flex; gap: 10px;
+        }
+        .welcome-date {
+            text-align: right;
+            font-size: 13px;
+            opacity: 0.7;
+            line-height: 1.6;
+        }
+        .welcome-date .day { font-size: 28px; font-weight: 700; opacity: 1; }
+
+        /* ============ Stats Cards ============ */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+            margin-bottom: 24px;
+        }
+        .stat-card {
+            background: var(--card);
+            border-radius: var(--radius);
+            padding: 22px 24px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: #e8ecf2;
+        }
+        .stat-card::after {
+            content: '';
+            position: absolute;
+            width: 80px; height: 80px;
+            border-radius: 50%;
+            top: -30px; right: -20px;
+            opacity: 0.08;
+            transition: var(--transition);
+            pointer-events: none;
+        }
+        .stat-card:hover::after { transform: scale(1.3); opacity: 0.12; }
+        .stat-card.c1::after { background: #667eea; }
+        .stat-card.c2::after { background: #10b981; }
+        .stat-card.c3::after { background: #f59e0b; }
+        .stat-card.c4::after { background: #3b82f6; }
+
+        .stat-card-row1 {
+            display: flex; justify-content: space-between; align-items: flex-start;
+            margin-bottom: 14px; position: relative; z-index: 1;
+        }
+        .stat-icon-bg {
+            width: 46px; height: 46px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px; flex-shrink: 0;
+        }
+        .stat-icon-bg.c1 { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .stat-icon-bg.c2 { background: linear-gradient(135deg, #11998e, #38ef7d); }
+        .stat-icon-bg.c3 { background: linear-gradient(135deg, #f093fb, #f5576c); }
+        .stat-icon-bg.c4 { background: linear-gradient(135deg, #4facfe, #00f2fe); }
+
+        .stat-badge {
+            font-size: 11px; font-weight: 700;
+            padding: 4px 10px; border-radius: 20px;
+            display: flex; align-items: center; gap: 3px;
+            white-space: nowrap;
+        }
+        .stat-badge.up { background: #ecfdf5; color: #059669; }
+        .stat-badge.down { background: #fef2f2; color: #dc2626; }
+        .stat-badge.warn { background: #fffbeb; color: #d97706; }
+
+        .stat-value {
+            font-size: 30px; font-weight: 800; line-height: 1.1;
+            margin-bottom: 4px; color: var(--text);
+            position: relative; z-index: 1;
+        }
+        .stat-label {
+            font-size: 12.5px; color: var(--text-secondary);
+            font-weight: 500; position: relative; z-index: 1;
+        }
+
+        /* ============ Content Layout ============ */
+        .row-two {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .row-three {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .row-four {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 20px;
+        }
+
+        /* ============ Card ============ */
+        .card {
+            background: var(--card);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            transition: var(--transition);
+        }
+        .card:hover { box-shadow: var(--shadow-lg); }
+        .card-header {
+            padding: 18px 22px;
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .card-header .title { font-size: 15px; font-weight: 700; color: var(--text); }
+        .card-header .subtitle { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+        .card-header .header-right { display: flex; gap: 8px; align-items: center; }
+        .card-body { padding: 18px 22px; }
+        .card-body.no-pad { padding: 0; }
+        .chart-wrap { width: 100%; height: 280px; }
+
+        /* ============ Progress Bars ============ */
+        .progress-item { margin-bottom: 16px; }
+        .progress-item:last-child { margin-bottom: 0; }
+        .progress-top { display: flex; justify-content: space-between; margin-bottom: 7px; }
+        .progress-name { font-size: 13px; font-weight: 600; color: var(--text); }
+        .progress-pct { font-size: 12px; font-weight: 700; color: var(--text-secondary); }
+        .progress-track { height: 8px; background: #e8ecf2; border-radius: 10px; overflow: hidden; }
+        .progress-fill {
+            height: 100%; border-radius: 10px;
+            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+        .progress-fill::after {
+            content: '';
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
+            animation: shimmer 2s infinite;
+        }
+        @keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(200%); } }
+        .pf-blue { background: linear-gradient(90deg, #667eea, #764ba2); }
+        .pf-green { background: linear-gradient(90deg, #11998e, #38ef7d); }
+        .pf-pink { background: linear-gradient(90deg, #f093fb, #f5576c); }
+        .pf-cyan { background: linear-gradient(90deg, #4facfe, #00f2fe); }
+
+        /* ============ Timeline ============ */
+        .timeline { position: relative; padding-left: 26px; }
+        .timeline::before {
+            content: ''; position: absolute; left: 7px; top: 6px; bottom: 6px;
+            width: 2px; background: linear-gradient(to bottom, #667eea, #11998e, #f093fb, #4facfe);
+            border-radius: 2px;
+        }
+        .tl-item { position: relative; margin-bottom: 20px; padding-left: 16px; }
+        .tl-item:last-child { margin-bottom: 0; }
+        .tl-dot {
+            position: absolute; left: -22px; top: 3px;
+            width: 14px; height: 14px; border-radius: 50%;
+            border: 3px solid #fff; box-shadow: 0 0 0 2px #667eea;
+            background: #fff; transition: var(--transition);
+        }
+        .tl-item:nth-child(1) .tl-dot { box-shadow: 0 0 0 2px #667eea; }
+        .tl-item:nth-child(2) .tl-dot { box-shadow: 0 0 0 2px #11998e; }
+        .tl-item:nth-child(3) .tl-dot { box-shadow: 0 0 0 2px #f093fb; }
+        .tl-item:nth-child(4) .tl-dot { box-shadow: 0 0 0 2px #4facfe; }
+        .tl-item:nth-child(5) .tl-dot { box-shadow: 0 0 0 2px #f59e0b; }
+        .tl-item:hover .tl-dot { transform: scale(1.4); }
+        .tl-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+        .tl-desc { font-size: 12.5px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 4px; }
+        .tl-time { font-size: 11px; color: #94a3b8; font-weight: 500; }
+
+        /* ============ Todo List ============ */
+        .todo-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 11px 16px; margin-bottom: 6px;
+            border-radius: var(--radius-sm); transition: var(--transition);
+            cursor: pointer; background: #f8fafc;
+        }
+        .todo-item:last-child { margin-bottom: 0; }
+        .todo-item:hover { background: #f1f5f9; }
+        .todo-item.done { opacity: 0.45; }
+        .todo-item.done .todo-text { text-decoration: line-through; }
+        .todo-check {
+            width: 20px; height: 20px; border-radius: 6px;
+            border: 2px solid #cbd5e1; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 12px; transition: var(--transition);
+        }
+        .todo-item.done .todo-check { background: #10b981; border-color: #10b981; color: #fff; }
+        .todo-text { flex: 1; font-size: 13px; font-weight: 500; color: var(--text); }
+        .todo-badge {
+            font-size: 10px; font-weight: 700; padding: 3px 8px;
+            border-radius: 12px; flex-shrink: 0;
+        }
+        .todo-badge.urgent { background: #fef2f2; color: #dc2626; }
+        .todo-badge.warn { background: #fffbeb; color: #d97706; }
+        .todo-badge.info { background: #eff6ff; color: #2563eb; }
+
+        /* ============ Transaction List ============ */
+        .tx-item {
+            display: flex; align-items: center; gap: 14px;
+            padding: 13px 0; border-bottom: 1px solid #f8fafc;
+            transition: var(--transition);
+        }
+        .tx-item:last-child { border-bottom: none; }
+        .tx-item:hover { background: #fafbfc; margin: 0 -22px; padding-left: 22px; padding-right: 22px; }
+        .tx-status {
+            width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+        }
+        .tx-status.done { background: #10b981; box-shadow: 0 0 6px rgba(16,185,129,0.4); }
+        .tx-status.pending { background: #f59e0b; box-shadow: 0 0 6px rgba(245,158,11,0.4); }
+        .tx-info { flex: 1; min-width: 0; }
+        .tx-title { font-size: 13.5px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .tx-meta { font-size: 11.5px; color: var(--text-secondary); margin-top: 2px; }
+        .tx-amount {
+            font-size: 14px; font-weight: 700; padding: 5px 10px; border-radius: 8px;
+            flex-shrink: 0;
+        }
+        .tx-amount.in { background: #ecfdf5; color: #059669; }
+        .tx-amount.out { background: #fef2f2; color: #dc2626; }
+
+        /* ============ Quick Actions ============ */
+        .quick-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+        }
+        .quick-btn {
+            display: flex; align-items: center; gap: 12px;
+            padding: 14px 16px; border-radius: var(--radius-sm);
+            background: #f8fafc; border: none; cursor: pointer;
+            transition: var(--transition); text-decoration: none;
+            font-family: inherit; text-align: left;
+        }
+        .quick-btn:hover {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff; transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(102,126,234,0.3);
+        }
+        .quick-btn:hover .qk-title, .quick-btn:hover .qk-desc { color: #fff; }
+        .quick-btn .qk-icon {
+            width: 42px; height: 42px; border-radius: 10px;
+            background: #fff; display: flex; align-items: center; justify-content: center;
+            font-size: 20px; flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .quick-btn .qk-text { flex: 1; min-width: 0; }
+        .qk-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+        .qk-desc { font-size: 11px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        /* ============ Animation ============ */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes countUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .stat-card { animation: fadeUp 0.5s ease forwards; }
+        .stat-card:nth-child(1) { animation-delay: 0s; }
+        .stat-card:nth-child(2) { animation-delay: 0.08s; }
+        .stat-card:nth-child(3) { animation-delay: 0.16s; }
+        .stat-card:nth-child(4) { animation-delay: 0.24s; }
+
+        /* ============ Responsive ============ */
+        @media (max-width: 1200px) {
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .row-two { grid-template-columns: 1fr; }
+            .row-three { grid-template-columns: 1fr; }
+            .row-four { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 768px) {
+            .stats-grid { grid-template-columns: 1fr; }
+            .welcome-banner { flex-direction: column; text-align: center; gap: 16px; }
+            .welcome-left { flex-direction: column; }
+            body { padding: 12px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- ============ Welcome Banner ============ -->
+    <div class="welcome-banner">
+        <div class="welcome-left">
+            <div class="welcome-avatar">🏦</div>
+            <div>
+                <h1>欢迎回来，<span id="adminName">管理员</span></h1>
+                <p>华瑞银行 HuaRui Bank · 综合业务智能管理平台</p>
+            </div>
+        </div>
+        <div class="welcome-right">
+            <div class="welcome-date">
+                <div class="day" id="todayDay">10</div>
+                <div id="todayFull">2026年7月</div>
+                <div id="todayWeek">星期五</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ Stats Cards ============ -->
+    <div class="stats-grid">
+        <div class="stat-card c1">
+            <div class="stat-card-row1">
+                <div class="stat-icon-bg c1">👥</div>
+                <span class="stat-badge up">▲ +3.2%</span>
+            </div>
+            <div class="stat-value" id="statUsers">0</div>
+            <div class="stat-label">客户总数</div>
+        </div>
+        <div class="stat-card c2">
+            <div class="stat-card-row1">
+                <div class="stat-icon-bg c2">👤</div>
+                <span class="stat-badge up">▲ +1.5%</span>
+            </div>
+            <div class="stat-value" id="statEmployees">0</div>
+            <div class="stat-label">在职员工</div>
+        </div>
+        <div class="stat-card c3">
+            <div class="stat-card-row1">
+                <div class="stat-icon-bg c3">🏢</div>
+                <span class="stat-badge down">▼ -1</span>
+            </div>
+            <div class="stat-value" id="statBranches">0</div>
+            <div class="stat-label">营业网点</div>
+        </div>
+        <div class="stat-card c4">
+            <div class="stat-card-row1">
+                <div class="stat-icon-bg c4">💰</div>
+                <span class="stat-badge up">▲ 增长中</span>
+            </div>
+            <div class="stat-value" id="statMoney">0<span style="font-size:15px;font-weight:500;"> 万元</span></div>
+            <div class="stat-label">总存款额</div>
+        </div>
+    </div>
+
+    <!-- ============ Row 2: Charts ============ -->
+    <div class="row-two">
+        <!-- 交易流量趋势图 -->
+        <div class="card">
+            <div class="card-header">
+                <div>
+                    <div class="title">📈 本周交易流量趋势</div>
+                    <div class="subtitle">单位：万元 · 实时动态</div>
+                </div>
+                <div class="header-right">
+                    <span style="font-size:11px;color:var(--text-secondary);">近7日</span>
+                </div>
+            </div>
+            <div class="card-body no-pad">
+                <div class="chart-wrap" id="chartFlow"></div>
+            </div>
+        </div>
+
+        <!-- 存款类型占比 -->
+        <div class="card">
+            <div class="card-header">
+                <div>
+                    <div class="title">🍩 存款类型分布</div>
+                    <div class="subtitle">各类存款占比统计</div>
+                </div>
+            </div>
+            <div class="card-body no-pad">
+                <div class="chart-wrap" id="chartDeposit" style="height:280px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ Row 3: Progress + Todo ============ -->
+    <div class="row-three">
+        <!-- 存款占比进度条 -->
+        <div class="card">
+            <div class="card-header">
+                <div>
+                    <div class="title">📊 各类存款指标</div>
+                    <div class="subtitle">年度完成进度</div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="progress-item">
+                    <div class="progress-top"><span class="progress-name">活期存款</span><span class="progress-pct">65%</span></div>
+                    <div class="progress-track"><div class="progress-fill pf-blue" style="width:0%" data-width="65"></div></div>
+                </div>
+                <div class="progress-item">
+                    <div class="progress-top"><span class="progress-name">定期存款</span><span class="progress-pct">48%</span></div>
+                    <div class="progress-track"><div class="progress-fill pf-green" style="width:0%" data-width="48"></div></div>
+                </div>
+                <div class="progress-item">
+                    <div class="progress-top"><span class="progress-name">理财存款</span><span class="progress-pct">72%</span></div>
+                    <div class="progress-track"><div class="progress-fill pf-pink" style="width:0%" data-width="72"></div></div>
+                </div>
+                <div class="progress-item">
+                    <div class="progress-top"><span class="progress-name">对公存款</span><span class="progress-pct">38%</span></div>
+                    <div class="progress-track"><div class="progress-fill pf-cyan" style="width:0%" data-width="38"></div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 待办事项 -->
+        <div class="card">
+            <div class="card-header">
+                <div>
+                    <div class="title">✅ 待办事项</div>
+                    <div class="subtitle">共 <span id="todoCount">5</span> 项待处理</div>
+                </div>
+            </div>
+            <div class="card-body" id="todoList">
+                <div class="todo-item done" onclick="toggleTodo(this)">
+                    <div class="todo-check">✓</div>
+                    <span class="todo-text">审批大额转账申请</span>
+                    <span class="todo-badge info">已完成</span>
+                </div>
+                <div class="todo-item done" onclick="toggleTodo(this)">
+                    <div class="todo-check">✓</div>
+                    <span class="todo-text">审核季度对账单</span>
+                    <span class="todo-badge info">已完成</span>
+                </div>
+                <div class="todo-item" onclick="toggleTodo(this)">
+                    <div class="todo-check"></div>
+                    <span class="todo-text">处理贷款申请审批</span>
+                    <span class="todo-badge urgent">紧急</span>
+                </div>
+                <div class="todo-item" onclick="toggleTodo(this)">
+                    <div class="todo-check"></div>
+                    <span class="todo-text">安排下周柜员排班</span>
+                    <span class="todo-badge warn">3天内</span>
+                </div>
+                <div class="todo-item" onclick="toggleTodo(this)">
+                    <div class="todo-check"></div>
+                    <span class="todo-text">审核网点合规报告</span>
+                    <span class="todo-badge warn">5天内</span>
+                </div>
+                <div class="todo-item" onclick="toggleTodo(this)">
+                    <div class="todo-check"></div>
+                    <span class="todo-text">更新客户风险评估</span>
+                    <span class="todo-badge info">1周</span>
+                </div>
+                <div class="todo-item" onclick="toggleTodo(this)">
+                    <div class="todo-check"></div>
+                    <span class="todo-text">整理反洗钱报告</span>
+                </div>
+                <div class="todo-item" onclick="toggleTodo(this)">
+                    <div class="todo-check"></div>
+                    <span class="todo-text">准备行务会议材料</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ Row 4: Timeline + Transactions ============ -->
+    <div class="row-four">
+        <!-- 最新动态时间线 -->
+        <div class="card">
+            <div class="card-header">
+                <div>
+                    <div class="title">📰 最新动态</div>
+                    <div class="subtitle">系统公告与行内新闻</div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="timeline">
+                    <div class="tl-item">
+                        <div class="tl-dot"></div>
+                        <div class="tl-title">季度对账通知发布</div>
+                        <div class="tl-desc">2026年第二季度对账工作已启动，请各网点及时完成对账并提交对账报告。</div>
+                        <div class="tl-time">今天 · 7月10日</div>
+                    </div>
+                    <div class="tl-item">
+                        <div class="tl-dot"></div>
+                        <div class="tl-title">分行荣获行业大奖</div>
+                        <div class="tl-desc">华瑞银行在2026年度金融科技创新大赛中荣获最佳数字银行奖，技术研发中心受到表彰。</div>
+                        <div class="tl-time">昨天 · 7月9日</div>
+                    </div>
+                    <div class="tl-item">
+                        <div class="tl-dot"></div>
+                        <div class="tl-title">新版手机银行上线</div>
+                        <div class="tl-desc">华瑞银行手机银行APP 5.0版本已正式上线，新增面部识别、智能客服等功能。</div>
+                        <div class="tl-time">3天前 · 7月7日</div>
+                    </div>
+                    <div class="tl-item">
+                        <div class="tl-dot"></div>
+                        <div class="tl-title">反洗钱培训会议</div>
+                        <div class="tl-desc">2026年第三季度反洗钱工作培训会议将于下周三召开，请各网点合规专员准时参加。</div>
+                        <div class="tl-time">5天前 · 7月5日</div>
+                    </div>
+                    <div class="tl-item">
+                        <div class="tl-dot"></div>
+                        <div class="tl-title">年度股东大会圆满召开</div>
+                        <div class="tl-desc">华瑞银行2025年度股东大会圆满结束，审议通过了年度利润分配方案及董事会工作报告。</div>
+                        <div class="tl-time">6月28日 · 上周五</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 最新交易 + 快捷操作 -->
+        <div>
+            <div class="card" style="margin-bottom:16px;">
+                <div class="card-header">
+                    <div>
+                        <div class="title">💳 最新交易动态</div>
+                        <div class="subtitle">实时交易流水记录</div>
+                    </div>
+                </div>
+                <div class="card-body" id="recentBills" style="max-height:360px;overflow-y:auto;">
+                    <div style="text-align:center;padding:30px;color:var(--text-secondary);">加载中…</div>
+                </div>
+            </div>
+
+            <!-- 快捷操作 -->
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="title">⚡ 快捷操作</div>
+                        <div class="subtitle">快速访问常用功能模块</div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="quick-grid">
+                        <a class="quick-btn" href="customer_manage.html" target="_parent" onclick="parent.switchPageByHref('customer_manage.html')">
+                            <div class="qk-icon">👥</div>
+                            <div class="qk-text"><div class="qk-title">客户管理</div><div class="qk-desc">查看/编辑客户</div></div>
+                        </a>
+                        <a class="quick-btn" href="employee_manage.html" target="_parent" onclick="parent.switchPageByHref('employee_manage.html')">
+                            <div class="qk-icon">👤</div>
+                            <div class="qk-text"><div class="qk-title">员工管理</div><div class="qk-desc">管理员工档案</div></div>
+                        </a>
+                        <a class="quick-btn" href="branch_manage.html" target="_parent" onclick="parent.switchPageByHref('branch_manage.html')">
+                            <div class="qk-icon">🏢</div>
+                            <div class="qk-text"><div class="qk-title">网点管理</div><div class="qk-desc">管理营业网点</div></div>
+                        </a>
+                        <a class="quick-btn" href="transaction_manage.html" target="_parent" onclick="parent.switchPageByHref('transaction_manage.html')">
+                            <div class="qk-icon">📋</div>
+                            <div class="qk-text"><div class="qk-title">交易管理</div><div class="qk-desc">查看交易流水</div></div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== 日期渲染 ====================
+        (function() {
+            const d = new Date();
+            const weeks = ['星期日','星期一','星期二','星期三','星期四','星期五','星期六'];
+            document.getElementById('todayDay').textContent = d.getDate();
+            document.getElementById('todayFull').textContent = d.getFullYear() + '年' + (d.getMonth()+1) + '月';
+            document.getElementById('todayWeek').textContent = weeks[d.getDay()];
+            try {
+                const name = parent.document.getElementById('topbarAdminName')?.textContent || '管理员';
+                document.getElementById('adminName').textContent = name;
+            } catch(e) {}
+        })();
+
+        // ==================== 进度条动画 ====================
+        function animateProgressBars() {
+            document.querySelectorAll('.progress-fill[data-width]').forEach(bar => {
+                const w = bar.getAttribute('data-width');
+                setTimeout(() => { bar.style.width = w + '%'; }, 200);
+            });
+        }
+
+        // ==================== Todo 切换 ====================
+        function toggleTodo(el) {
+            el.classList.toggle('done');
+            const check = el.querySelector('.todo-check');
+            if (el.classList.contains('done')) {
+                check.textContent = '✓';
+            } else {
+                check.textContent = '';
+            }
+            updateTodoCount();
+        }
+        function updateTodoCount() {
+            const total = document.querySelectorAll('.todo-item').length;
+            const done = document.querySelectorAll('.todo-item.done').length;
+            document.getElementById('todoCount').textContent = (total - done);
+        }
+
+        // ==================== 数据加载 ====================
+        let flowChart, depositChart;
+
+        async function loadStats() {
+            try {
+                const resp = await fetch('/api/dashboard/stats');
+                const r = await resp.json();
+                if (r.success) {
+                    animateValue('statUsers', 0, r.userCount || 0, 1200);
+                    animateValue('statEmployees', 0, r.employeeCount || 0, 1200);
+                    animateValue('statBranches', 0, r.branchCount || 0, 1200);
+                    const moneyW = parseFloat(((r.totalMoney || 0) / 10000).toFixed(2));
+                    animateMoney('statMoney', moneyW, 1500);
+                }
+                // 后备：直接请求各个接口
+                if (!r.success) {
+                    const [usersResp, empResp, branchResp] = await Promise.all([
+                        fetch('/api/users'),
+                        fetch('/api/employees'),
+                        fetch('/api/branches')
+                    ]);
+                    const users = await usersResp.json();
+                    const emps = await empResp.json();
+                    const branches = await branchResp.json();
+                    const userArr = users.data || [];
+                    const totalMoney = userArr.reduce((s, u) => s + (u.money || 0), 0);
+                    animateValue('statUsers', 0, userArr.length, 1200);
+                    animateValue('statEmployees', 0, (emps.data || []).length, 1200);
+                    animateValue('statBranches', 0, (branches.data || []).length, 1200);
+                    const moneyW = parseFloat((totalMoney / 10000).toFixed(2));
+                    animateMoney('statMoney', moneyW, 1500);
+                }
+            } catch(e) { console.error('loadStats error:', e); }
+        }
+
+        function animateValue(id, from, to, duration) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const start = performance.now();
+            function update(ts) {
+                const progress = Math.min((ts - start) / duration, 1);
+                const eased = 1 - Math.pow(1 - progress, 3);
+                const current = Math.floor(from + (to - from) * eased);
+                el.textContent = current.toLocaleString();
+                if (progress < 1) requestAnimationFrame(update);
+                else el.textContent = to.toLocaleString();
+            }
+            requestAnimationFrame(update);
+        }
+
+        function animateMoney(id, to, duration) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const start = performance.now();
+            function update(ts) {
+                const progress = Math.min((ts - start) / duration, 1);
+                const eased = 1 - Math.pow(1 - progress, 3);
+                const current = (to * eased).toFixed(2);
+                el.innerHTML = current + '<span style="font-size:15px;font-weight:500;"> 万元</span>';
+                if (progress < 1) requestAnimationFrame(update);
+                else el.innerHTML = to.toFixed(2) + '<span style="font-size:15px;font-weight:500;"> 万元</span>';
+            }
+            requestAnimationFrame(update);
+        }
+
+        async function loadRecentBills() {
+            try {
+                const resp = await fetch('/api/bills/all');
+                if (!resp.ok) throw new Error();
+                const r = await resp.json();
+                const data = (r.data || []).slice(0, 10);
+                const container = document.getElementById('recentBills');
+                
+                if (!data.length) {
+                    container.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-secondary);">暂无交易记录</div>';
+                    return;
+                }
+                
+                container.innerHTML = data.map(b => {
+                    const time = b.createTime ? new Date(b.createTime).toLocaleString('zh-CN') : '-';
+                    const isIn = b.type && (b.type.includes('存入') || b.type.includes('转入') || b.type === '存款');
+                    const statusClass = (b.type && b.type.includes('审批')) ? 'pending' : 'done';
+                    return `<div class="tx-item">
+                        <div class="tx-status ${statusClass}"></div>
+                        <div class="tx-info">
+                            <div class="tx-title">${b.type || '交易'}</div>
+                            <div class="tx-meta">用户${b.uid || '-'} · ${time}</div>
+                        </div>
+                        <div class="tx-amount ${isIn?'in':'out'}">
+                            ${isIn?'+':'-'}￥${(b.amount||0).toLocaleString('zh-CN',{minimumFractionDigits:2})}
+                        </div>
+                    </div>`;
+                }).join('');
+            } catch(e) {
+                document.getElementById('recentBills').innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-secondary);">加载失败</div>';
+            }
+        }
+
+        // ==================== ECharts 图表（动态数据） ====================
+        async function initCharts() {
+            const chartFlowDom = document.getElementById('chartFlow');
+            const chartDepositDom = document.getElementById('chartDeposit');
+            if (!chartFlowDom || !chartDepositDom) return;
+
+            // 初始化图表
+            if (!flowChart) flowChart = echarts.init(chartFlowDom);
+            if (!depositChart) depositChart = echarts.init(chartDepositDom);
+
+            // 加载交易趋势
+            try {
+                const trendResp = await fetch('/api/dashboard/trend');
+                const trendData = await trendResp.json();
+                if (trendData.success) {
+                    flowChart.setOption({
+                        tooltip: {
+                            trigger: 'axis',
+                            backgroundColor: 'rgba(15,29,54,0.9)',
+                            borderColor: 'rgba(201,168,76,0.3)',
+                            textStyle: { color: '#fff', fontSize: 13 },
+                            axisPointer: { type: 'cross', crossStyle: { color: '#999' } }
+                        },
+                        legend: {
+                            bottom: 0, textStyle: { fontSize: 11, color: '#64748b' },
+                            data: ['交易额(万元)', '交易笔数']
+                        },
+                        grid: { left: '3%', right: '6%', bottom: '14%', top: '8%', containLabel: true },
+                        xAxis: {
+                            type: 'category', data: trendData.days || [],
+                            axisLine: { lineStyle: { color: '#e2e8f0' } },
+                            axisTick: { show: false },
+                            axisLabel: { color: '#94a3b8', fontSize: 11 }
+                        },
+                        yAxis: [
+                            {
+                                type: 'value', name: '万元',
+                                nameTextStyle: { color: '#94a3b8', fontSize: 10 },
+                                splitLine: { lineStyle: { color: '#f1f5f9', type: 'dashed' } },
+                                axisLabel: { color: '#94a3b8', fontSize: 11 }
+                            },
+                            {
+                                type: 'value', name: '笔',
+                                nameTextStyle: { color: '#94a3b8', fontSize: 10 },
+                                splitLine: { show: false },
+                                axisLabel: { color: '#94a3b8', fontSize: 11 }
+                            }
+                        ],
+                        series: [
+                            {
+                                name: '交易额(万元)', type: 'line', smooth: true,
+                                data: trendData.amounts || [],
+                                lineStyle: { width: 3, color: '#667eea' },
+                                itemStyle: { color: '#667eea' },
+                                areaStyle: {
+                                    color: new echarts.graphic.LinearGradient(0,0,0,1,[
+                                        { offset: 0, color: 'rgba(102,126,234,0.25)' },
+                                        { offset: 1, color: 'rgba(102,126,234,0.02)' }
+                                    ])
+                                },
+                                symbol: 'circle', symbolSize: 8
+                            },
+                            {
+                                name: '交易笔数', type: 'bar', yAxisIndex: 1,
+                                data: trendData.counts || [],
+                                barWidth: 16,
+                                itemStyle: {
+                                    borderRadius: [6,6,0,0],
+                                    color: new echarts.graphic.LinearGradient(0,0,0,1,[
+                                        { offset: 0, color: '#4facfe' },
+                                        { offset: 1, color: '#00f2fe' }
+                                    ])
+                                }
+                            }
+                        ]
+                    });
+                }
+            } catch(e) { console.error('load trend error:', e); }
+
+            // 加载存款类型分布
+            try {
+                const typeResp = await fetch('/api/dashboard/depositTypes');
+                const typeData = await typeResp.json();
+                if (typeData.success && typeData.data && typeData.data.length > 0) {
+                    const pieData = typeData.data.map(item => ({
+                        value: item.value,
+                        name: item.name,
+                        itemStyle: item.itemStyle
+                    }));
+                    depositChart.setOption({
+                        tooltip: {
+                            trigger: 'item',
+                            backgroundColor: 'rgba(15,29,54,0.9)',
+                            borderColor: 'rgba(201,168,76,0.3)',
+                            textStyle: { color: '#fff', fontSize: 13 },
+                            formatter: '{b}: {c}万元 ({d}%)'
+                        },
+                        legend: {
+                            bottom: 0, textStyle: { fontSize: 11, color: '#64748b' },
+                            itemWidth: 10, itemHeight: 10, itemGap: 16
+                        },
+                        series: [{
+                            name: '存款类型',
+                            type: 'pie',
+                            radius: ['52%', '78%'],
+                            center: ['50%', '46%'],
+                            avoidLabelOverlap: false,
+                            itemStyle: {
+                                borderRadius: 6,
+                                borderColor: '#fff',
+                                borderWidth: 3
+                            },
+                            label: { show: false },
+                            emphasis: {
+                                label: { show: true, fontSize: 16, fontWeight: 'bold' },
+                                scaleSize: 8
+                            },
+                            data: pieData
+                        }]
+                    });
+                }
+            } catch(e) { console.error('load deposit types error:', e); }
+
+            // 加载存款进度
+            try {
+                const progResp = await fetch('/api/dashboard/depositProgress');
+                const progData = await progResp.json();
+                if (progData.success && progData.data && progData.data.length > 0) {
+                    const items = progData.data;
+                    // 更新进度条
+                    const progressItems = document.querySelectorAll('.progress-item');
+                    const colorMap = { '#667eea': 'pf-blue', '#11998e': 'pf-green', '#f093fb': 'pf-pink', '#4facfe': 'pf-cyan' };
+                    for (let i = 0; i < Math.min(progressItems.length, items.length); i++) {
+                        const item = items[i];
+                        const progEl = progressItems[i];
+                        const nameEl = progEl.querySelector('.progress-name');
+                        const pctEl = progEl.querySelector('.progress-pct');
+                        const fillEl = progEl.querySelector('.progress-fill');
+                        if (nameEl) nameEl.textContent = item.name;
+                        if (pctEl) pctEl.textContent = item.pct + '%';
+                        if (fillEl) {
+                            fillEl.setAttribute('data-width', item.pct);
+                            fillEl.className = 'progress-fill ' + (colorMap[item.color] || 'pf-blue');
+                        }
+                    }
+                    setTimeout(animateProgressBars, 300);
+                }
+            } catch(e) { console.error('load progress error:', e); }
+
+            // 窗口大小变化自适应
+            window.addEventListener('resize', () => {
+                if (flowChart) flowChart.resize();
+                if (depositChart) depositChart.resize();
+            });
+        }
+
+        // ==================== 初始化 ====================
+        loadStats();
+        loadRecentBills();
+        setTimeout(initCharts, 200);
+        setTimeout(animateProgressBars, 500);
+    </script>
+</body>
+</html>

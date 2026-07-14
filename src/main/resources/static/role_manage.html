@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>角色权限管理</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        :root {
+            --primary: #1e3a5f; --primary-light: #2d5a87;
+            --accent: #c9a84c;
+            --bg: #f1f5f9; --card: #ffffff;
+            --text: #1a202c; --text-secondary: #64748b;
+            --border: #e2e8f0;
+            --shadow: 0 1px 3px rgba(0,0,0,0.06);
+            --radius: 14px; --radius-sm: 10px;
+            --transition: 0.2s cubic-bezier(0.4,0,0.2,1);
+            --danger: #ef4444; --danger-hover: #dc2626;
+            --success: #059669;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', 'Microsoft YaHei', -apple-system, sans-serif;
+            background: var(--bg); color: var(--text);
+            padding: 24px 28px;
+        }
+        .page-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 20px;
+        }
+        .page-header h2 {
+            font-size: 20px; font-weight: 700;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .btn-primary {
+            background: var(--primary); color: #fff; border: none;
+            height: 40px; padding: 0 22px; border-radius: 8px;
+            cursor: pointer; font-weight: 600; font-size: 14px;
+            display: flex; align-items: center; gap: 6px;
+            transition: var(--transition);
+        }
+        .btn-primary:hover { background: var(--primary-light); }
+        .btn-sm {
+            height: 30px; padding: 0 12px; font-size: 12px; border-radius: 6px;
+            cursor: pointer; font-weight: 600; border: none; transition: var(--transition);
+        }
+        .btn-edit { background: #eff6ff; color: #2563eb; }
+        .btn-edit:hover { background: #dbeafe; }
+        .btn-del { background: #fef2f2; color: #dc2626; }
+        .btn-del:hover { background: #fee2e2; }
+
+        .table-card {
+            background: var(--card); border-radius: var(--radius);
+            box-shadow: var(--shadow); overflow: hidden;
+        }
+        table { width: 100%; border-collapse: collapse; }
+        thead { background: #1e3a5f; }
+        th {
+            padding: 14px 18px; text-align: left; font-size: 12px;
+            font-weight: 700; color: #ffffff; text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        td {
+            padding: 14px 18px; font-size: 13px;
+            border-bottom: 1px solid #f1f5f9; vertical-align: middle;
+        }
+        tbody tr:hover { background: #f8fafc; }
+        tbody tr:last-child td { border-bottom: none; }
+        .badge {
+            display: inline-block; padding: 3px 10px; border-radius: 20px;
+            font-size: 11px; font-weight: 600;
+        }
+        .badge-admin { background: #fef3c7; color: #92400e; }
+        .badge-manager { background: #dbeafe; color: #1e40af; }
+        .badge-user { background: #ecfdf5; color: #059669; }
+
+        /* 模态框 */
+        .modal-overlay {
+            display: none;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 1000;
+            align-items: center; justify-content: center;
+        }
+        .modal-overlay.show { display: flex; }
+        .modal {
+            background: #fff; border-radius: var(--radius);
+            width: 520px; max-height: 85vh; overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            animation: slideUp 0.25s ease;
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .modal-header {
+            padding: 18px 24px; border-bottom: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 16px; font-weight: 700;
+        }
+        .modal-close {
+            width: 32px; height: 32px; border-radius: 8px;
+            border: none; background: #f1f5f9; cursor: pointer;
+            font-size: 16px; color: var(--text-secondary); transition: var(--transition);
+        }
+        .modal-close:hover { background: #e2e8f0; color: var(--text); }
+        .modal-body { padding: 20px 24px; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label {
+            display: block; font-size: 12px; font-weight: 700;
+            color: var(--text-secondary); text-transform: uppercase;
+            margin-bottom: 6px; letter-spacing: 0.5px;
+        }
+        .form-group input, .form-group textarea {
+            width: 100%; padding: 10px 14px; border: 1.5px solid var(--border);
+            border-radius: 8px; font-size: 14px; font-family: inherit;
+            background: #f8fafc; outline: none; transition: var(--transition);
+        }
+        .form-group input:focus, .form-group textarea:focus {
+            border-color: var(--primary-light); background: #fff;
+        }
+        .form-group textarea { resize: vertical; min-height: 100px; }
+        .modal-footer {
+            padding: 16px 24px; border-top: 1px solid var(--border);
+            display: flex; gap: 10px; justify-content: flex-end;
+        }
+        .btn-cancel {
+            height: 38px; padding: 0 18px; border-radius: 8px;
+            border: 1.5px solid var(--border); background: #fff;
+            cursor: pointer; font-weight: 600; font-size: 13px;
+            color: var(--text-secondary); transition: var(--transition);
+        }
+        .btn-cancel:hover { background: #f1f5f9; }
+        .btn-submit {
+            height: 38px; padding: 0 22px; border-radius: 8px;
+            border: none; background: var(--primary); color: #fff;
+            cursor: pointer; font-weight: 600; font-size: 13px;
+            transition: var(--transition);
+        }
+        .btn-submit:hover { background: var(--primary-light); }
+
+        .empty-state {
+            text-align: center; padding: 60px 20px; color: var(--text-secondary);
+        }
+        .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+    </style>
+</head>
+<body>
+    <div class="page-header">
+        <h2>🔐 角色权限管理</h2>
+        <button class="btn-primary" onclick="openAddModal()">＋ 新增角色</button>
+    </div>
+
+    <div class="table-card">
+        <table>
+            <thead>
+                <tr>
+                    <th>角色ID</th>
+                    <th>角色名称</th>
+                    <th>权限说明</th>
+                    <th style="text-align:center;width:160px;">操作</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                <tr><td colspan="4" class="empty-state"><div class="icon">📋</div>加载中...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 新增/编辑弹窗 -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <span id="modalTitle">新增角色</span>
+                <button class="modal-close" onclick="closeModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editId">
+                <div class="form-group">
+                    <label>角色名称</label>
+                    <input type="text" id="roleName" placeholder="例如：管理员、客户经理、储户">
+                </div>
+                <div class="form-group">
+                    <label>权限说明</label>
+                    <textarea id="permissions" placeholder="例如：用户管理、员工管理、网点管理、账户管理、交易管理、角色管理、数据仪表盘"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="closeModal()">取消</button>
+                <button class="btn-submit" onclick="submitForm()">确认保存</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 加载角色列表
+        async function loadRoles() {
+            const tbody = document.getElementById('tableBody');
+            try {
+                const resp = await fetch('/api/roles');
+                const r = await resp.json();
+                const data = r.data || [];
+                if (!data.length) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="empty-state"><div class="icon">📋</div>暂无角色数据</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = data.map(role => {
+                    let badgeClass = 'badge-admin';
+                    if (role.roleName === '客户经理') badgeClass = 'badge-manager';
+                    else if (role.roleName === '储户') badgeClass = 'badge-user';
+                    return `<tr>
+                        <td><strong>#${role.id}</strong></td>
+                        <td><span class="badge ${badgeClass}">${escapeHtml(role.roleName)}</span></td>
+                        <td style="max-width:400px;">${escapeHtml(role.permissions || '-')}</td>
+                        <td style="text-align:center;">
+                            <button class="btn-sm btn-edit" onclick="openEditModal(${role.id}, '${escapeJs(role.roleName)}', '${escapeJs(role.permissions || '')}')">✏️ 编辑</button>
+                            <button class="btn-sm btn-del" onclick="deleteRole(${role.id}, '${escapeJs(role.roleName)}')">🗑 删除</button>
+                        </td>
+                    </tr>`;
+                }).join('');
+            } catch(e) {
+                tbody.innerHTML = '<tr><td colspan="4" class="empty-state"><div class="icon">⚠️</div>加载失败，请检查网络连接</td></tr>';
+            }
+        }
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        function escapeJs(str) {
+            return str.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
+        }
+
+        // 新增
+        function openAddModal() {
+            document.getElementById('editId').value = '';
+            document.getElementById('roleName').value = '';
+            document.getElementById('permissions').value = '';
+            document.getElementById('modalTitle').textContent = '新增角色';
+            document.getElementById('modalOverlay').classList.add('show');
+        }
+
+        // 编辑
+        function openEditModal(id, roleName, permissions) {
+            document.getElementById('editId').value = id;
+            document.getElementById('roleName').value = roleName;
+            document.getElementById('permissions').value = permissions;
+            document.getElementById('modalTitle').textContent = '编辑角色';
+            document.getElementById('modalOverlay').classList.add('show');
+        }
+
+        // 关闭弹窗
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('show');
+        }
+
+        // 点击遮罩关闭
+        document.getElementById('modalOverlay').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+
+        // 提交表单
+        async function submitForm() {
+            const id = document.getElementById('editId').value;
+            const roleName = document.getElementById('roleName').value.trim();
+            const permissions = document.getElementById('permissions').value.trim();
+
+            if (!roleName) { alert('请输入角色名称'); return; }
+            if (!permissions) { alert('请输入权限说明'); return; }
+
+            const params = new URLSearchParams();
+            if (id) params.append('id', id);
+            params.append('roleName', roleName);
+            params.append('permissions', permissions);
+
+            try {
+                const method = id ? 'PUT' : 'POST';
+                const resp = await fetch('/api/roles', {
+                    method,
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: params
+                });
+                const r = await resp.json();
+                if (r.success) {
+                    alert(r.message);
+                    closeModal();
+                    loadRoles();
+                } else {
+                    alert(r.message || '操作失败');
+                }
+            } catch(e) {
+                alert('操作失败，请重试');
+            }
+        }
+
+        // 删除角色
+        async function deleteRole(id, name) {
+            if (!confirm(`确定要删除角色「${name}」吗？此操作不可恢复。`)) return;
+            try {
+                const resp = await fetch('/api/roles/' + id, { method: 'DELETE' });
+                const r = await resp.json();
+                if (r.success) {
+                    alert(r.message);
+                    loadRoles();
+                } else {
+                    alert(r.message || '删除失败');
+                }
+            } catch(e) {
+                alert('删除失败，请重试');
+            }
+        }
+
+        // 初始加载
+        loadRoles();
+    </script>
+</body>
+</html>

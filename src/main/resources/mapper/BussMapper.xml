@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="edu.fjut.mybatis.mapper.BussMapper">
+
+    <resultMap id="bussMap" type="Buss">
+        <id property="id" column="id"/>
+        <result property="uid" column="uid"/>
+        <result property="type" column="type"/>
+        <result property="amount" column="amount"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <select id="findByUid" parameterType="int" resultMap="bussMap">
+        SELECT id, uid, type, amount, create_time
+        FROM bussioness
+        WHERE uid = #{uid}
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="findAll" resultMap="bussMap">
+        SELECT id, uid, type, amount, create_time
+        FROM bussioness
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 统计流水总数 -->
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM bussioness
+    </select>
+
+    <!-- 新增流水记录 -->
+    <insert id="insert" parameterType="Buss">
+        INSERT INTO bussioness (uid, type, amount, create_time)
+        VALUES (#{uid}, #{type}, #{amount}, NOW())
+    </insert>
+
+</mapper>

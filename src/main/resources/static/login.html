@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>华瑞银行 · 管理系统</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        :root {
+            --primary: #1e3a5f;
+            --primary-light: #2d5a87;
+            --accent: #c9a84c;
+            --accent-light: #e4c76b;
+            --bg: #f0f2f5;
+            --card: #ffffff;
+            --text: #1a202c;
+            --text-secondary: #64748b;
+            --border: #e2e8f0;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+            --shadow: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -2px rgba(0,0,0,0.05);
+            --shadow-lg: 0 20px 60px -12px rgba(0,0,0,0.15);
+            --radius: 16px;
+            --radius-sm: 10px;
+            --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', 'Microsoft YaHei', -apple-system, sans-serif;
+            background: linear-gradient(135deg, #0f1d36 0%, #1a3350 30%, #1e3a5f 60%, #1a2840 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        /* 粒子画布 */
+        #particleCanvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+        /* 背景装饰 */
+        body::before {
+            content: '';
+            position: absolute;
+            width: 600px; height: 600px;
+            background: radial-gradient(circle, rgba(201,168,76,0.08) 0%, transparent 70%);
+            top: -200px; right: -150px;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        body::after {
+            content: '';
+            position: absolute;
+            width: 500px; height: 500px;
+            background: radial-gradient(circle, rgba(45,90,135,0.12) 0%, transparent 70%);
+            bottom: -180px; left: -120px;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .login-wrapper {
+            position: relative;
+            z-index: 1;
+            width: 440px;
+            animation: fadeInUp 0.6s ease;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 顶部品牌 */
+        .brand-header {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+        .brand-logo {
+            width: 56px; height: 56px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            border-radius: 16px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            margin-bottom: 14px;
+            box-shadow: 0 8px 24px rgba(201,168,76,0.25);
+        }
+        .brand-header h1 {
+            color: #fff;
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        .brand-header p {
+            color: rgba(255,255,255,0.55);
+            font-size: 13px;
+            margin-top: 6px;
+            letter-spacing: 0.5px;
+        }
+
+        /* 登录卡片 */
+        .login-card {
+            background: var(--card);
+            border-radius: var(--radius);
+            padding: 40px 36px;
+            box-shadow: var(--shadow-lg);
+        }
+        .login-card h2 {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 4px;
+        }
+        .login-card .subtitle {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 28px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 6px;
+        }
+        .form-group .input-wrap {
+            position: relative;
+        }
+        .form-group .input-wrap .icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 16px;
+            color: #94a3b8;
+            pointer-events: none;
+        }
+        .form-group input {
+            width: 100%;
+            height: 48px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 0 14px 0 42px;
+            font-size: 15px;
+            font-family: inherit;
+            color: var(--text);
+            background: #f8fafc;
+            transition: var(--transition);
+            outline: none;
+        }
+        .form-group input:focus {
+            border-color: var(--primary-light);
+            background: #fff;
+            box-shadow: 0 0 0 4px rgba(30,58,95,0.08);
+        }
+        .form-group input::placeholder {
+            color: #b0bec5;
+        }
+
+        .btn-login {
+            width: 100%;
+            height: 48px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: #fff;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 16px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            letter-spacing: 0.5px;
+            transition: var(--transition);
+            margin-top: 6px;
+            box-shadow: 0 4px 14px rgba(30,58,95,0.3);
+        }
+        .btn-login:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 24px rgba(30,58,95,0.35);
+        }
+        .btn-login:active {
+            transform: translateY(0);
+        }
+
+        /* 角色选择 */
+        .role-group {
+            margin-bottom: 20px;
+        }
+        .role-group label.role-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 10px;
+        }
+        .role-options {
+            display: flex;
+            gap: 16px;
+        }
+        .role-option {
+            flex: 1;
+            position: relative;
+            cursor: pointer;
+        }
+        .role-option input {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .role-option .role-box {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            padding: 10px 8px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-weight: 500;
+            color: #64748b;
+            background: #f8fafc;
+            transition: var(--transition);
+            user-select: none;
+        }
+        .role-option input:checked + .role-box {
+            border-color: var(--primary);
+            background: #eef4ff;
+            color: var(--primary);
+            font-weight: 600;
+            box-shadow: 0 0 0 3px rgba(30,58,95,0.08);
+        }
+        .role-option .role-box:hover {
+            border-color: #94a3b8;
+        }
+        .role-option input:checked + .role-box .role-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--primary);
+            flex-shrink: 0;
+        }
+
+        .login-footer {
+            text-align: center;
+            margin-top: 24px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-120px);
+            background: var(--danger);
+            color: #fff;
+            padding: 12px 28px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            z-index: 9999;
+            transition: transform 0.3s ease;
+            box-shadow: 0 8px 20px rgba(239,68,68,0.3);
+            font-family: inherit;
+        }
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+        .toast.success {
+            background: var(--success);
+            box-shadow: 0 8px 20px rgba(16,185,129,0.3);
+        }
+
+        @media (max-width: 480px) {
+            .login-wrapper { width: 92vw; }
+            .login-card { padding: 28px 22px; }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="particleCanvas"></canvas>
+    <div class="login-wrapper">
+        <div class="brand-header">
+            <div class="brand-logo">🏦</div>
+            <h1>华瑞银行</h1>
+            <p>HuaRui Bank · 智能管理系统</p>
+        </div>
+        <div class="login-card">
+            <h2>欢迎回来</h2>
+            <p class="subtitle">请登录您的账户以继续</p>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>用户名</label>
+                    <div class="input-wrap">
+                        <span class="icon">👤</span>
+                        <input type="text" id="username" placeholder="请输入用户名" required autocomplete="username">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>密码</label>
+                    <div class="input-wrap">
+                        <span class="icon">🔒</span>
+                        <input type="password" id="password" placeholder="请输入密码" required autocomplete="current-password">
+                    </div>
+                </div>
+                <div class="role-group">
+                    <label class="role-label">选择身份</label>
+                    <div class="role-options">
+                        <label class="role-option">
+                            <input type="radio" name="role" value="admin" checked>
+                            <span class="role-box"><span class="role-dot"></span> 管理员</span>
+                        </label>
+                        <label class="role-option">
+                            <input type="radio" name="role" value="user">
+                            <span class="role-box"><span class="role-dot"></span> 储户</span>
+                        </label>
+                        <label class="role-option">
+                            <input type="radio" name="role" value="manager">
+                            <span class="role-box"><span class="role-dot"></span> 客户经理</span>
+                        </label>
+                    </div>
+                </div>
+                <button type="submit" class="btn-login">登 录 系 统</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ==================== 粒子背景动画 ====================
+        (function() {
+            const canvas = document.getElementById('particleCanvas');
+            const ctx = canvas.getContext('2d');
+            let width, height;
+            let particles = [];
+            const PARTICLE_COUNT = 80;
+            const CONNECT_DIST = 140;
+            const MOUSE_RADIUS = 120;
+            let mouse = { x: -9999, y: -9999 };
+
+            function resize() {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resize);
+            resize();
+
+            // 鼠标追踪
+            document.addEventListener('mousemove', function(e) {
+                mouse.x = e.clientX;
+                mouse.y = e.clientY;
+            });
+            document.addEventListener('mouseleave', function() {
+                mouse.x = -9999;
+                mouse.y = -9999;
+            });
+
+            // 创建粒子
+            for (let i = 0; i < PARTICLE_COUNT; i++) {
+                particles.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    vx: (Math.random() - 0.5) * 0.6,
+                    vy: (Math.random() - 0.5) * 0.6,
+                    r: Math.random() * 2.2 + 0.8,
+                    baseR: Math.random() * 2.2 + 0.8,
+                    opacity: Math.random() * 0.5 + 0.2,
+                    color: Math.random() < 0.3
+                        ? 'rgba(201,168,76,OPACITY)'   // 金色
+                        : 'rgba(100,160,220,OPACITY)'   // 蓝色
+                });
+            }
+
+            function draw() {
+                ctx.clearRect(0, 0, width, height);
+
+                // 更新 & 绘制粒子
+                for (let i = 0; i < particles.length; i++) {
+                    const p = particles[i];
+
+                    // 与鼠标的交互
+                    const dxm = mouse.x - p.x;
+                    const dym = mouse.y - p.y;
+                    const distM = Math.sqrt(dxm * dxm + dym * dym);
+                    if (distM < MOUSE_RADIUS && distM > 0) {
+                        const force = (MOUSE_RADIUS - distM) / MOUSE_RADIUS;
+                        const angle = Math.atan2(dym, dxm);
+                        p.vx -= Math.cos(angle) * force * 0.04;
+                        p.vy -= Math.sin(angle) * force * 0.04;
+                        p.r = p.baseR + force * 1.2;
+                    } else {
+                        p.r += (p.baseR - p.r) * 0.1;
+                    }
+
+                    // 移动
+                    p.x += p.vx;
+                    p.y += p.vy;
+
+                    // 速度衰减
+                    p.vx *= 0.998;
+                    p.vy *= 0.998;
+
+                    // 边界回弹
+                    if (p.x < 0 || p.x > width)  p.vx *= -1;
+                    if (p.y < 0 || p.y > height) p.vy *= -1;
+                    p.x = Math.max(0, Math.min(width, p.x));
+                    p.y = Math.max(0, Math.min(height, p.y));
+
+                    // 绘制粒子（带发光效果）
+                    const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 2.5);
+                    const c = p.color.replace('OPACITY', String(p.opacity));
+                    const cGlow = p.color.replace('OPACITY', String(p.opacity * 0.3));
+                    gradient.addColorStop(0, c);
+                    gradient.addColorStop(1, 'transparent');
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.r * 2.5, 0, Math.PI * 2);
+                    ctx.fillStyle = gradient;
+                    ctx.fill();
+
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                    ctx.fillStyle = c;
+                    ctx.fill();
+                }
+
+                // 绘制连线（仅绘制彼此靠近的粒子）
+                for (let i = 0; i < particles.length; i++) {
+                    for (let j = i + 1; j < particles.length; j++) {
+                        const dx = particles[i].x - particles[j].x;
+                        const dy = particles[i].y - particles[j].y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist < CONNECT_DIST) {
+                            const alpha = (1 - dist / CONNECT_DIST) * 0.25;
+                            ctx.beginPath();
+                            ctx.moveTo(particles[i].x, particles[i].y);
+                            ctx.lineTo(particles[j].x, particles[j].y);
+                            ctx.strokeStyle = 'rgba(140,180,220,' + alpha + ')';
+                            ctx.lineWidth = 0.6;
+                            ctx.stroke();
+                        }
+                    }
+                }
+
+                requestAnimationFrame(draw);
+            }
+
+            draw();
+        })();
+
+        // ==================== 登录逻辑 ====================
+        const toast = document.getElementById('toast');
+        function showToast(msg, isSuccess) {
+            toast.textContent = msg;
+            toast.className = 'toast ' + (isSuccess ? 'success' : '') + ' show';
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            if (!username || !password) { showToast('请输入用户名和密码', false); return; }
+
+            // 获取选中的角色
+            const roleRadio = document.querySelector('input[name="role"]:checked');
+            const role = roleRadio ? roleRadio.value : 'user';
+
+            const formData = new URLSearchParams();
+            formData.append('username', username);
+            formData.append('password', password);
+            formData.append('role', role);
+
+            try {
+                const resp = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: formData
+                });
+                const data = await resp.json();
+                if (data.success) {
+                    sessionStorage.setItem('loginRole', data.role);
+                    if (data.role === 'admin') {
+                        sessionStorage.setItem('adminName', data.user ? data.user.name : username);
+                        window.location.href = '/admin.html';
+                    } else if (data.role === 'manager') {
+                        sessionStorage.setItem('adminName', data.user.name || username);
+                        sessionStorage.setItem('userInfo', JSON.stringify(data.user));
+                        window.location.href = '/admin.html';
+                    } else {
+                        sessionStorage.setItem('userInfo', JSON.stringify(data.user));
+                        if (data.vip) sessionStorage.setItem('userVip', JSON.stringify(data.vip));
+                        window.location.href = '/user.html';
+                    }
+                } else {
+                    showToast(data.message || '登录失败', false);
+                }
+            } catch (err) {
+                showToast('网络错误，请稍后重试', false);
+            }
+        });
+    </script>
+</body>
+</html>

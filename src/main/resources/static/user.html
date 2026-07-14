@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>华瑞银行 · 个人银行</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        :root {
+            --sidebar-bg: #1a2332; --sidebar-hover: #243040;
+            --sidebar-active: #2c3e50;
+            --primary: #1e3a5f; --primary-light: #2d5a87;
+            --accent: #f59e0b; --accent-light: #fbbf24;
+            --bg: #f0f2f5; --card: #ffffff;
+            --text: #1a202c; --text-secondary: #64748b;
+            --border: #e2e8f0;
+            --success: #10b981; --danger: #ef4444; --info: #3b82f6;
+            --shadow: 0 1px 3px rgba(0,0,0,0.06);
+            --radius: 14px; --radius-sm: 10px;
+            --transition: 0.2s cubic-bezier(0.4,0,0.2,1);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; overflow: hidden; }
+        body {
+            font-family: 'Inter', 'Microsoft YaHei', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+        }
+
+        /* ============ 左侧导航栏 ============ */
+        .sidebar {
+            width: 230px; min-width: 230px;
+            height: 100vh;
+            background: var(--sidebar-bg);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 2px 0 20px rgba(0,0,0,0.15);
+            z-index: 100;
+        }
+        .sidebar-header {
+            padding: 22px 18px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            color: #fff;
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        .sidebar-nav {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px 0;
+        }
+        .sidebar-nav::-webkit-scrollbar { width: 4px; }
+        .sidebar-nav::-webkit-scrollbar-thumb { background: #3a4a5a; border-radius: 4px; }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 13px 22px;
+            color: #8fa4bc;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            border-left: 3px solid transparent;
+            letter-spacing: 0.3px;
+        }
+        .nav-item:hover {
+            color: #fff;
+            background: var(--sidebar-hover);
+        }
+        .nav-item .nav-dot {
+            width: 16px; height: 16px;
+            border: 2px solid #8fa4bc;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            border-radius: 3px;
+            flex-shrink: 0;
+            transition: var(--transition);
+        }
+        .nav-item.active {
+            color: #fff;
+            background: var(--sidebar-active);
+            border-left-color: #3b82f6;
+            font-weight: 600;
+        }
+        .nav-item.active .nav-dot {
+            border-color: #fff;
+            background: #3b82f6;
+        }
+
+        .sidebar-footer {
+            padding: 14px 18px;
+            border-top: 1px solid rgba(255,255,255,0.06);
+        }
+        .btn-exit {
+            width: 100%;
+            padding: 10px;
+            background: rgba(239,68,68,0.15);
+            color: #fca5a5;
+            border: 1px solid rgba(239,68,68,0.3);
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+        .btn-exit:hover { background: rgba(239,68,68,0.25); }
+
+        /* ============ 右侧主区域 ============ */
+        .main-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* 顶部栏 */
+        .topbar {
+            height: 56px;
+            background: #fff;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 28px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            z-index: 50;
+        }
+        .topbar-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text);
+        }
+        .topbar-user {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+        }
+        .topbar-user .avatar-circle {
+            width: 34px; height: 34px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 14px;
+        }
+        .role-badge {
+            background: #fef3c7;
+            color: #92400e;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        /* 内容滚动区 */
+        .content-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px 28px;
+        }
+        .content-scroll::-webkit-scrollbar { width: 5px; }
+        .content-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+
+        /* ============ 仪表盘内容 ============ */
+        .page-section { display: none; }
+        .page-section.active { display: block; animation: fadeIn 0.25s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* 余额横幅 */
+        .balance-banner {
+            background: linear-gradient(135deg, #dbeafe 0%, #eff6ff 50%, #e0f2fe 100%);
+            border-radius: var(--radius);
+            padding: 24px 28px;
+            margin-bottom: 22px;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .balance-banner .balance-info .bal-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .balance-banner .balance-info .bal-amount {
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-top: 2px;
+            letter-spacing: -0.5px;
+        }
+        .vip-badge {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: #fff;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        /* 快捷操作卡片 */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 16px;
+            margin-bottom: 22px;
+        }
+        .action-card {
+            background: #fff;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            transition: var(--transition);
+            overflow: hidden;
+        }
+        .action-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        .action-card .card-top {
+            height: 4px;
+        }
+        .card-top.blue { background: #3b82f6; }
+        .card-top.green { background: #10b981; }
+        .card-top.cyan { background: #06b6d4; }
+        .card-top.orange { background: #f59e0b; }
+        .card-top.purple { background: #8b5cf6; }
+
+        .action-card .card-body {
+            padding: 22px 16px;
+            text-align: center;
+        }
+        .action-card .card-icon {
+            width: 48px; height: 48px;
+            margin: 0 auto 10px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+        .card-icon.blue { background: #eff6ff; color: #3b82f6; }
+        .card-icon.green { background: #ecfdf5; color: #10b981; }
+        .card-icon.cyan { background: #ecfeff; color: #06b6d4; }
+        .card-icon.orange { background: #fffbeb; color: #f59e0b; }
+        .card-icon.purple { background: #f5f3ff; color: #8b5cf6; }
+
+        .action-card .card-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        /* 交易记录表格 */
+        .table-section {
+            background: #fff;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+        .table-section .table-title {
+            padding: 18px 22px;
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text);
+            border-bottom: 1px solid var(--border);
+        }
+        table { width: 100%; border-collapse: collapse; }
+        thead { background: #f8fafc; }
+        th {
+            padding: 12px 16px;
+            text-align: left;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid var(--border);
+        }
+        td {
+            padding: 12px 16px;
+            font-size: 13px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        tbody tr:hover { background: #f8fafc; }
+        .amount-plus { color: var(--success); font-weight: 600; }
+        .amount-minus { color: var(--danger); font-weight: 600; }
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            color: var(--success);
+            font-weight: 600;
+            font-size: 12px;
+        }
+        .status-dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--success);
+        }
+        .text-muted { color: var(--text-secondary); text-align: center; padding: 40px !important; }
+
+        /* 交易记录 */
+        .bill-filter-bar {
+            display: flex; gap: 12px; align-items: center;
+            margin-bottom: 16px; flex-wrap: wrap;
+        }
+        .bill-filter-bar select, .bill-filter-bar input {
+            height: 38px; border: 1.5px solid var(--border);
+            border-radius: 8px; padding: 0 12px;
+            font-size: 13px; font-family: inherit;
+            background: #fff; color: var(--text);
+        }
+        .bill-filter-bar select:focus, .bill-filter-bar input:focus {
+            border-color: var(--primary-light); outline: none;
+            box-shadow: 0 0 0 3px rgba(30,58,95,0.06);
+        }
+        .bill-stats {
+            display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap;
+        }
+        .bill-stat-card {
+            flex: 1; min-width: 140px;
+            background: #fff; border-radius: var(--radius-sm);
+            padding: 14px 18px; box-shadow: var(--shadow);
+        }
+        .bill-stat-card .stat-label { font-size: 11px; color: var(--text-secondary); font-weight: 600; }
+        .bill-stat-card .stat-value { font-size: 18px; font-weight: 700; margin-top: 2px; }
+        .bill-stat-card .stat-value.income { color: var(--success); }
+        .bill-stat-card .stat-value.expense { color: var(--danger); }
+        .bill-stat-card .stat-value.neutral { color: var(--primary); }
+        .type-tag {
+            display: inline-block; padding: 3px 10px; border-radius: 12px;
+            font-size: 12px; font-weight: 600; white-space: nowrap;
+        }
+        .type-tag.deposit { background: #d1fae5; color: #065f46; }
+        .type-tag.withdraw { background: #fee2e2; color: #991b1b; }
+        .type-tag.transfer-out { background: #fef3c7; color: #92400e; }
+        .type-tag.transfer-in { background: #dbeafe; color: #1e40af; }
+
+        /* 个人信息页 */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+        }
+        .info-card {
+            background: #fff;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 18px 20px;
+        }
+        .info-card .info-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+        .info-card .info-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text);
+        }
+        .profile-header {
+            background: #fff;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 28px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .profile-avatar {
+            width: 72px; height: 72px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            color: #fff;
+            flex-shrink: 0;
+        }
+
+        /* 弹窗 */
+        .modal-overlay {
+            display: none;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 999;
+            align-items: center; justify-content: center;
+        }
+        .modal-overlay.show { display: flex; }
+        .modal-box {
+            background: #fff;
+            width: 440px; max-width: 94vw;
+            border-radius: var(--radius);
+            box-shadow: 0 25px 60px rgba(0,0,0,0.25);
+            overflow: hidden;
+            animation: modalIn 0.2s ease;
+        }
+        @keyframes modalIn {
+            from { opacity: 0; transform: translateY(-16px) scale(0.97); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 22px;
+            border-bottom: 1px solid var(--border);
+            font-size: 16px; font-weight: 700;
+        }
+        .modal-header button {
+            width: 30px; height: 30px;
+            border: none; background: #f1f5f9;
+            border-radius: 50%;
+            cursor: pointer; font-size: 16px;
+            color: var(--text-secondary);
+        }
+        .modal-body { padding: 20px 22px; }
+        .modal-body label {
+            display: block;
+            font-size: 12px; font-weight: 700;
+            color: #374151; margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+        .modal-body input {
+            width: 100%; height: 42px;
+            border: 1.5px solid var(--border);
+            border-radius: 8px; padding: 0 14px;
+            font-size: 14px; font-family: inherit;
+            outline: none; margin-bottom: 14px;
+        }
+        .modal-body input:focus {
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(30,58,95,0.06);
+        }
+        .modal-body .hint { font-size: 12px; color: var(--text-secondary); margin-bottom: 10px; }
+        .modal-footer {
+            padding: 14px 22px 20px;
+            display: flex; justify-content: flex-end; gap: 10px;
+        }
+        .btn-cancel {
+            background: #f1f5f9; border: 1px solid var(--border);
+            color: #475569; padding: 8px 22px;
+            border-radius: 8px; cursor: pointer;
+            font-family: inherit; font-weight: 500;
+        }
+        .btn-submit {
+            border: none; color: #fff;
+            padding: 8px 24px; border-radius: 8px;
+            cursor: pointer; font-weight: 600;
+            font-family: inherit;
+            background: var(--primary);
+        }
+        .btn-submit:hover { opacity: 0.9; }
+        .msg { font-size: 13px; margin-top: 8px; display: none; }
+        .msg.show { display: block; }
+        .msg.success { color: var(--success); }
+        .msg.error { color: var(--danger); }
+
+        @media (max-width: 900px) {
+            .cards-grid { grid-template-columns: repeat(3, 1fr); }
+            .info-grid { grid-template-columns: 1fr 1fr; }
+        }
+        @media (max-width: 600px) {
+            .sidebar { display: none; }
+            .cards-grid { grid-template-columns: 1fr 1fr; }
+            .info-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ============ 左侧导航 ============ -->
+<div class="sidebar">
+    <div class="sidebar-header">□ 银行管理系统</div>
+    <div class="sidebar-nav">
+        <div class="nav-item active" data-page="dashboard" onclick="switchPage('dashboard', this)">
+            <span class="nav-dot"></span> 仪表盘
+        </div>
+        <div class="nav-item" data-page="deposit" onclick="switchPage('deposit', this)">
+            <span class="nav-dot"></span> 存款
+        </div>
+        <div class="nav-item" data-page="withdraw" onclick="switchPage('withdraw', this)">
+            <span class="nav-dot"></span> 取款
+        </div>
+        <div class="nav-item" data-page="transfer" onclick="switchPage('transfer', this)">
+            <span class="nav-dot"></span> 转账
+        </div>
+        <div class="nav-item" data-page="password" onclick="switchPage('password', this)">
+            <span class="nav-dot"></span> 修改密码
+        </div>
+        <div class="nav-item" data-page="profile" onclick="switchPage('profile', this)">
+            <span class="nav-dot"></span> 个人信息
+        </div>
+        <div class="nav-item" data-page="transactions" onclick="switchPage('transactions', this)">
+            <span class="nav-dot"></span> 交易记录
+        </div>
+    </div>
+    <div class="sidebar-footer">
+        <button class="btn-exit" onclick="logout()">退出登录</button>
+    </div>
+</div>
+
+<!-- ============ 右侧主区域 ============ -->
+<div class="main-area">
+    <div class="topbar">
+        <span class="topbar-title" id="topbarTitle">仪表盘</span>
+        <div class="topbar-user">
+            <span id="topbarUserName">--</span>
+            <span class="role-badge" id="topbarRole">储户</span>
+            <span class="avatar-circle" id="topbarAvatar">👤</span>
+        </div>
+    </div>
+
+    <div class="content-scroll" id="contentScroll">
+
+        <!-- ===== 仪表盘 ===== -->
+        <div class="page-section active" id="page-dashboard">
+            <!-- 余额横幅 -->
+            <div class="balance-banner">
+                <div class="balance-info">
+                    <div class="bal-label">当前账户余额</div>
+                    <div class="bal-amount" id="dashBalance">¥ --</div>
+                </div>
+                <span class="vip-badge" id="vipBadge">VIP 金卡会员</span>
+            </div>
+
+            <!-- 快捷操作卡片 -->
+            <div class="cards-grid">
+                <div class="action-card" onclick="switchPage('deposit', null)">
+                    <div class="card-top blue"></div>
+                    <div class="card-body">
+                        <div class="card-icon blue">□</div>
+                        <div class="card-label">存款</div>
+                    </div>
+                </div>
+                <div class="action-card" onclick="switchPage('withdraw', null)">
+                    <div class="card-top green"></div>
+                    <div class="card-body">
+                        <div class="card-icon green">□</div>
+                        <div class="card-label">取款</div>
+                    </div>
+                </div>
+                <div class="action-card" onclick="switchPage('transfer', null)">
+                    <div class="card-top cyan"></div>
+                    <div class="card-body">
+                        <div class="card-icon cyan">□</div>
+                        <div class="card-label">转账</div>
+                    </div>
+                </div>
+                <div class="action-card" onclick="switchPage('password', null)">
+                    <div class="card-top orange"></div>
+                    <div class="card-body">
+                        <div class="card-icon orange">□</div>
+                        <div class="card-label">改密</div>
+                    </div>
+                </div>
+                <div class="action-card" onclick="switchPage('profile', null)">
+                    <div class="card-top purple"></div>
+                    <div class="card-body">
+                        <div class="card-icon purple">□</div>
+                        <div class="card-label">资产</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 最近交易记录 -->
+            <div class="table-section">
+                <div class="table-title">最近交易记录</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>流水号</th><th>时间</th><th>类型</th><th>金额</th><th>对方账号</th><th>状态</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dashBillBody">
+                        <tr><td colspan="6" class="text-muted">加载中...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ===== 个人信息 ===== -->
+        <div class="page-section" id="page-profile">
+            <div style="display:flex;gap:20px;flex-wrap:wrap;">
+                <!-- 左侧：个人资料（可编辑） -->
+                <div class="table-section" style="flex:1;min-width:360px;padding:28px;">
+                    <h3 style="margin-bottom:20px;">👤 个人资料</h3>
+                    <div style="max-width:460px;">
+                        <label>登录账号</label>
+                        <div style="position:relative;">
+                            <input type="text" id="profEditUsername" disabled style="width:100%;height:42px;border:1.5px solid var(--border);border-radius:8px;padding:0 14px;font-size:14px;margin-bottom:14px;background:#f1f5f9;color:#94a3b8;">
+                            <span style="position:absolute;right:12px;top:11px;font-size:11px;color:#94a3b8;background:#e2e8f0;padding:2px 8px;border-radius:4px;">不可修改</span>
+                        </div>
+                        <label>真实姓名</label>
+                        <input type="text" id="profEditName" placeholder="请输入真实姓名" style="width:100%;height:42px;border:1.5px solid var(--border);border-radius:8px;padding:0 14px;font-size:14px;margin-bottom:14px;">
+                        <label>年龄</label>
+                        <input type="number" id="profEditAge" placeholder="请输入年龄" min="1" max="150" style="width:100%;height:42px;border:1.5px solid var(--border);border-radius:8px;padding:0 14px;font-size:14px;margin-bottom:14px;">
+                        <label>性别</label>
+                        <select id="profEditGender" style="width:100%;height:42px;border:1.5px solid var(--border);border-radius:8px;padding:0 14px;font-size:14px;margin-bottom:14px;background:#fff;color:var(--text);">
+                            <option value="男">男</option>
+                            <option value="女">女</option>
+                        </select>
+                        <label>手机号</label>
+                        <input type="text" id="profEditPhone" placeholder="请输入手机号" maxlength="11" style="width:100%;height:42px;border:1.5px solid var(--border);border-radius:8px;padding:0 14px;font-size:14px;margin-bottom:14px;">
+                        <label>身份证号</label>
+                        <div style="position:relative;">
+                            <input type="text" id="profEditCard" disabled style="width:100%;height:42px;border:1.5px solid var(--border);border-radius:8px;padding:0 14px;font-size:14px;margin-bottom:16px;background:#f1f5f9;color:#94a3b8;">
+                            <span style="position:absolute;right:12px;top:11px;font-size:11px;color:#94a3b8;background:#e2e8f0;padding:2px 8px;border-radius:4px;">不可修改</span>
+                        </div>
+                        <button onclick="doSaveProfile()" style="width:100%;height:44px;font-size:15px;background:#007BFF;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:600;">保存修改</button>
+                        <div class="msg" id="msg-profile-inline"></div>
+                    </div>
+                </div>
+                <!-- 右侧：账户信息（只读） -->
+                <div class="table-section" style="width:260px;padding:22px;">
+                    <h4 style="margin-bottom:14px;font-size:15px;">📋 账户信息</h4>
+                    <div style="font-size:13px;line-height:2.2;">
+                        <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f1f5f9;"><span style="color:var(--text-secondary);">账户状态</span><span style="color:#10b981;font-weight:600;">正常</span></div>
+                        <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f1f5f9;"><span style="color:var(--text-secondary);">账户类型</span><span style="font-weight:500;">个人储蓄卡</span></div>
+                        <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f1f5f9;"><span style="color:var(--text-secondary);">VIP等级</span><span id="profVip" style="color:#f59e0b;font-weight:600;">--</span></div>
+                        <div style="display:flex;justify-content:space-between;padding:6px 0;"><span style="color:var(--text-secondary);">账户余额</span><span id="profBalance" style="font-weight:600;color:var(--primary);">--</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== 交易记录 ===== -->
+        <div class="page-section" id="page-transactions">
+            <!-- 筛选栏 -->
+            <div class="bill-filter-bar">
+                <select id="billTypeFilter" onchange="filterBills()" style="width:140px;">
+                    <option value="全部">全部类型</option>
+                    <option value="存款">存款</option>
+                    <option value="取款">取款</option>
+                    <option value="转账-转出">转账-转出</option>
+                    <option value="转账-转入">转账-转入</option>
+                </select>
+                <input type="date" id="billDateStart" onchange="filterBills()" style="width:150px;" title="开始日期">
+                <span style="font-size:13px;color:var(--text-secondary);">至</span>
+                <input type="date" id="billDateEnd" onchange="filterBills()" style="width:150px;" title="结束日期">
+                <button onclick="filterBills()" style="height:38px;padding:0 20px;background:var(--primary);color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;">🔍 查询</button>
+                <button onclick="resetBillFilter()" style="height:38px;padding:0 16px;background:#f1f5f9;color:#475569;border:1px solid var(--border);border-radius:8px;cursor:pointer;font-weight:500;font-size:13px;">重置</button>
+            </div>
+            <!-- 统计卡片 -->
+            <div class="bill-stats">
+                <div class="bill-stat-card"><div class="stat-label">总交易笔数</div><div class="stat-value neutral" id="billCount">0</div></div>
+                <div class="bill-stat-card"><div class="stat-label">收入合计</div><div class="stat-value income" id="billIncome">¥0.00</div></div>
+                <div class="bill-stat-card"><div class="stat-label">支出合计</div><div class="stat-value expense" id="billExpense">¥0.00</div></div>
+            </div>
+            <!-- 表格 -->
+            <div class="table-section">
+                <div class="table-title">交易记录明细</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>流水号</th><th>时间</th><th>类型</th><th>金额</th><th>对方账号</th><th>状态</th>
+                        </tr>
+                    </thead>
+                    <tbody id="allBillBody">
+                        <tr><td colspan="6" class="text-muted">加载中...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ===== 存款页 ===== -->
+        <div class="page-section" id="page-deposit">
+            <div style="display:flex;gap:20px;flex-wrap:wrap;">
+                <!-- 左侧表单 -->
+                <div class="table-section" style="flex:1;min-width:340px;padding:28px;">
+                    <h3 style="margin-bottom:20px;">💰 存款操作</h3>
+                    <label>存款金额 (元)</label>
+                    <input type="number" id="inpDepositAmount" placeholder="请输入存款金额" min="0.01" step="0.01" style="width:100%;height:42px;border:1.5px solid var(--border);border-radius:8px;padding:0 14px;font-size:14px;margin-bottom:14px;">
+                    <label>存款方式</label>
+                    <select id="inpDepositMethod" style="width:100%;height:42px;border:1.5px solid var(--border);border-radius:8px;padding:0 14px;font-size:14px;margin-bottom:14px;background:#f8fafc;color:var(--text);">
+                        <option value="现金">现金</option>
+                        <option value="转账">转账</option>
+                    </select>
+                    <label>备注（选填）</label>
+                    <input type="text" id="inpDepositNote" placeholder="可适当备注信息" style="width:100%;height:42px;border:1.5px solid var(--border);border-radius:8px;padding:0 14px;font-size:14px;margin-bottom:16px;">
+                    <div style="display:flex;gap:10px;">
+                        <button class="btn-submit" onclick="doDeposit()" style="flex:1;height:44px;font-size:15px;background:#007BFF;">确认存款</button>
+                        <button onclick="resetDeposit()" style="flex:1;height:44px;font-size:15px;background:#6C757D;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:600;">重置</button>
+                    </div>
+                    <div class="msg" id="msg-deposit-inline"></div>
+                </div>
+                <!-- 右侧提示 -->
+                <div class="table-section" style="width:260px;padding:22px;">
+                    <h4 style="margin-bottom:14px;font-size:15px;">💡 提示</h4>
+                    <ul style="list-style:disc;padding-left:18px;font-size:13px;line-height:2;color:var(--text-secondary);">
+                        <li>存款金额须大于0</li>
+                        <li>支持小数点后两位</li>
+                        <li>存款即时到账</li>
+                        <li style="margin-top:8px;font-style:italic;color:var(--text);">大额存取（≥5万）<br>请到柜台办理</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== 取款页 ===== -->
+        <div class="page-section" id="page-withdraw">
+            <div style="display:flex;gap:20px;flex-wrap:wrap;">
+                <!-- 左侧表单 -->
+                <div class="table-section" style="flex:1;min-width:340px;padding:28px;">
+                    <h3 style="margin-bottom:20px;">💸 取款操作</h3>
+                    <label>取款金额 (元)</label>
+                    <input type="number" id="inpWithdrawAmount" placeholder="请输入取款金额" min="0.01" step="0.01" style="width:100%;height:42px;border:1.5px solid var(--border);border-radius:8px;padding:0 14px;font-size:14px;margin-bottom:14px;">
+                    <label>取款方式</label>
+                    <select id="inpWithdrawMethod" style="width:100%;height:42px;border:1.5px solid var(--border);border-radius:8px;padding:0 14px;font-size:14px;margin-bottom:14px;background:#f8fafc;color:var(--text);">
+                        <option value="现金">现金</option>
+                    </select>
+                    <p style="font-size:12px;color:var(--text-secondary);margin-bottom:12px;">当前余额：<strong id="withdrawHint">--</strong></p>
+                    <div style="display:flex;gap:10px;">
+                        <button onclick="doWithdraw()" style="flex:1;height:44px;font-size:15px;background:#2ECC71;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:600;">确认取款</button>
+                        <button onclick="resetWithdraw()" style="flex:1;height:44px;font-size:15px;background:#6C757D;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:600;">重置</button>
+                    </div>
+                    <div class="msg" id="msg-withdraw-inline"></div>
+                </div>
+                <!-- 右侧提示 -->
+                <div class="table-section" style="width:260px;padding:22px;">
+                    <h4 style="margin-bottom:14px;font-size:15px;">💡 提示</h4>
+                    <ul style="list-style:disc;padding-left:18px;font-size:13px;line-height:2;color:var(--text-secondary);">
+                        <li>取款金额须大于0</li>
+                        <li>不可超过当前余额</li>
+                        <li>取款后余额不可为负</li>
+                        <li>日累计取款限额 100,000元</li>
+                        <li style="margin-top:8px;font-style:italic;color:var(--text);">大额取款请提前预约</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== 转账页 ===== -->
+        <div class="page-section" id="page-transfer">
+            <div style="display:flex;gap:20px;flex-wrap:wrap;">
+                <!-- 左侧表单 -->
+                <div class="table-section" style="flex:1;min-width:340px;padding:28px;">
+                    <h3 style="margin-bottom:20px;">📤 转账操作</h3>
+                    <label>收款方银行卡号</label>
+                    <input type="text" id="inpTransferToAccount" placeholder="请输入对方银行卡号" style="width:100%;height:42px;border:1.5px solid var(--border);border-radius:8px;padding:0 14px;font-size:14px;margin-bottom:14px;">
+                    <label>收款方姓名</label>
+                    <input type="text" id="inpTransferToName" placeholder="请输入收款方真实姓名" style="width:100%;height:42px;border:1.5px solid var(--border);border-radius:8px;padding:0 14px;font-size:14px;margin-bottom:14px;">
+                    <label>转账金额 (元)</label>
+                    <input type="number" id="inpTransferAmount" placeholder="请输入转账金额" min="0.01" step="0.01" style="width:100%;height:42px;border:1.5px solid var(--border);border-radius:8px;padding:0 14px;font-size:14px;margin-bottom:14px;">
+                    <label>转账备注</label>
+                    <input type="text" id="inpTransferNote" placeholder="选填，最多20字" maxlength="20" style="width:100%;height:42px;border:1.5px solid var(--border);border-radius:8px;padding:0 14px;font-size:14px;margin-bottom:14px;">
+                    <p style="font-size:12px;color:var(--text-secondary);margin-bottom:12px;">当前余额：<strong id="transferBalHint">--</strong></p>
+                    <div style="display:flex;gap:10px;">
+                        <button onclick="doTransfer()" style="flex:1;height:44px;font-size:15px;background:#17a2b8;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:600;">确认转账</button>
+                        <button onclick="resetTransfer()" style="flex:1;height:44px;font-size:15px;background:#6C757D;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:600;">重置</button>
+                    </div>
+                    <div class="msg" id="msg-transfer-inline"></div>
+                </div>
+                <!-- 右侧提示 -->
+                <div class="table-section" style="width:260px;padding:22px;">
+                    <h4 style="margin-bottom:14px;font-size:15px;">💡 提示</h4>
+                    <ul style="list-style:disc;padding-left:18px;font-size:13px;line-height:2;color:var(--text-secondary);">
+                        <li>转账金额须大于0</li>
+                        <li>不可超过当前余额</li>
+                        <li>不可向本人账号转账</li>
+                        <li>请确认收款方信息准确无误</li>
+                        <li>转账记录可随时在交易记录中查看</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="page-section" id="page-password">
+            <div class="table-section" style="padding:28px;">
+                <h3 style="margin-bottom:20px;">🔒 修改密码</h3>
+                <div style="max-width:420px;">
+                    <label>原密码</label>
+                    <input type="password" id="inpOldPwd" placeholder="请输入原密码" style="width:100%;height:42px;border:1.5px solid var(--border);border-radius:8px;padding:0 14px;font-size:14px;margin-bottom:14px;">
+                    <label>新密码</label>
+                    <input type="password" id="inpNewPwd" placeholder="至少6位" style="width:100%;height:42px;border:1.5px solid var(--border);border-radius:8px;padding:0 14px;font-size:14px;margin-bottom:14px;">
+                    <label>确认新密码</label>
+                    <input type="password" id="inpConfirmPwd" placeholder="再次输入新密码" style="width:100%;height:42px;border:1.5px solid var(--border);border-radius:8px;padding:0 14px;font-size:14px;margin-bottom:14px;">
+                    <button class="btn-submit" onclick="doChangePassword()" style="width:100%;height:44px;font-size:15px;">确认修改</button>
+                    <div class="msg" id="msg-password-inline"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+// ==================== 初始化 ====================
+if (sessionStorage.getItem('loginRole') !== 'user') window.location.href = '/login.html';
+const userInfo = JSON.parse(sessionStorage.getItem('userInfo') || '{}');
+if (!userInfo.id) window.location.href = '/login.html';
+
+// 顶部用户信息
+const userName = userInfo.name || '储户';
+document.getElementById('topbarUserName').textContent = '□ ' + userName + ' (储户)';
+document.getElementById('topbarRole').textContent = userInfo.role === 'manager' ? '经理' : '储户';
+
+// ==================== VIP 等级 ====================
+// 从后端获取VIP信息（登录时已返回，也可通过API刷新）
+let userVip = null;  // 当前VIP等级对象
+
+function getVipLevel(money) {
+    // 后端未返回时，用本地兜底
+    if (userVip) return userVip;
+    if (money >= 100000) return { levelName: 'VIP 金卡会员', levelCode: 'gold', color: '#f59e0b', icon: '🥇', cls: 'vip-badge' };
+    if (money >= 50000) return { levelName: 'VIP 银卡会员', levelCode: 'silver', color: '#64748b', icon: '🥈', cls: 'vip-badge', style: 'background: linear-gradient(135deg,#94a3b8,#64748b);' };
+    if (money >= 10000) return { levelName: 'VIP 铜卡会员', levelCode: 'copper', color: '#d97706', icon: '🥉', cls: 'vip-badge', style: 'background: linear-gradient(135deg,#d97706,#b45309);' };
+    return { levelName: '普通会员', levelCode: 'normal', color: '#94a3b8', icon: '👤', cls: 'vip-badge', style: 'background: #94a3b8;' };
+}
+
+async function refreshVip() {
+    try {
+        const resp = await fetch('/api/vip/' + userInfo.id);
+        const d = await resp.json();
+        if (d.success && d.vip) {
+            userVip = d.vip;
+            updateVipBadge();
+            // 同步更新个人信息页
+            const profVipEl = document.getElementById('profVip');
+            if (profVipEl) profVipEl.textContent = (d.vip.icon || '') + ' ' + d.vip.levelName;
+        }
+    } catch(e) {}
+}
+
+function updateVipBadge() {
+    const money = userInfo.money || 0;
+    const vip = getVipLevel(money);
+    const badge = document.getElementById('vipBadge');
+    const label = (vip.icon || '') + ' ' + (vip.levelName || vip.label || '');
+    badge.textContent = label;
+    badge.className = 'vip-badge';
+    // 使用后端返回的颜色
+    if (vip.color) {
+        badge.style.cssText = 'background: linear-gradient(135deg, ' + vip.color + ', ' + vip.color + 'cc);';
+    } else if (vip.style) {
+        badge.style.cssText = vip.style;
+    }
+    // 更新仪表盘上的VIP标签
+    if (vip.levelCode === 'gold') badge.style.cssText = 'background: linear-gradient(135deg, #f59e0b, #d97706);';
+    else if (vip.levelCode === 'silver') badge.style.cssText = 'background: linear-gradient(135deg, #94a3b8, #64748b);';
+    else if (vip.levelCode === 'copper') badge.style.cssText = 'background: linear-gradient(135deg, #d97706, #b45309);';
+    else badge.style.cssText = 'background: #94a3b8;';
+}
+
+// ==================== 余额刷新 ====================
+async function refreshBalance() {
+    try {
+        const resp = await fetch('/api/users/' + userInfo.id);
+        const d = await resp.json();
+        if (d && d.money !== undefined) {
+            userInfo.money = d.money;
+            sessionStorage.setItem('userInfo', JSON.stringify(userInfo));
+            document.getElementById('dashBalance').textContent = '¥ ' + d.money.toLocaleString('zh-CN', {minimumFractionDigits: 2});
+            await refreshVip();
+        }
+    } catch(e) {}
+}
+
+// 初始余额显示
+document.getElementById('dashBalance').textContent = '¥ ' + (userInfo.money || 0).toLocaleString('zh-CN', {minimumFractionDigits: 2});
+// 从sessionStorage加载VIP（登录时保存）
+try { userVip = JSON.parse(sessionStorage.getItem('userVip') || 'null'); } catch(e) {}
+updateVipBadge();
+
+// ==================== 页面切换 ====================
+function switchPage(page, el) {
+    // 激活导航
+    if (el) {
+        document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+        el.classList.add('active');
+    } else {
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.classList.toggle('active', item.getAttribute('data-page') === page);
+        });
+    }
+
+    // 隐藏所有页面
+    document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+    const target = document.getElementById('page-' + page);
+    if (target) target.classList.add('active');
+
+    // 更新顶栏标题
+    const titles = {
+        dashboard: '仪表盘', deposit: '存款', withdraw: '取款',
+        transfer: '转账', password: '修改密码', profile: '个人信息', transactions: '交易记录'
+    };
+    document.getElementById('topbarTitle').textContent = titles[page] || page;
+
+    // 特殊页面逻辑
+    if (page === 'profile') loadProfile();
+    if (page === 'transactions') loadAllBills();
+    if (page === 'deposit') { document.getElementById('inpDepositAmount').value = ''; document.getElementById('inpDepositMethod').value = '现金'; document.getElementById('inpDepositNote').value = ''; clearMsg('deposit'); }
+    if (page === 'withdraw') { document.getElementById('inpWithdrawAmount').value = ''; document.getElementById('inpWithdrawMethod').value = '现金'; clearMsg('withdraw'); document.getElementById('withdrawHint').textContent = '¥ ' + (userInfo.money||0).toFixed(2); }
+    if (page === 'transfer') { document.getElementById('inpTransferToAccount').value = ''; document.getElementById('inpTransferToName').value = ''; document.getElementById('inpTransferAmount').value = ''; document.getElementById('inpTransferNote').value = ''; document.getElementById('transferBalHint').textContent = '¥ ' + (userInfo.money||0).toFixed(2); clearMsg('transfer'); }
+
+    // 滚动到顶部
+    document.getElementById('contentScroll').scrollTop = 0;
+}
+
+// ==================== 个人信息 ====================
+function loadProfile() {
+    document.getElementById('profEditUsername').value = userInfo.username || '';
+    document.getElementById('profEditName').value = userInfo.name || '';
+    document.getElementById('profEditAge').value = userInfo.age || '';
+    document.getElementById('profEditGender').value = userInfo.gender || '男';
+    document.getElementById('profEditPhone').value = userInfo.phone || '';
+    document.getElementById('profEditCard').value = userInfo.card || '';
+    const vip = getVipLevel(userInfo.money || 0);
+    document.getElementById('profVip').textContent = (vip.icon || '') + ' ' + (vip.levelName || vip.label || '');
+    document.getElementById('profBalance').textContent = '¥ ' + (userInfo.money || 0).toLocaleString('zh-CN', {minimumFractionDigits: 2});
+}
+
+async function doSaveProfile() {
+    const name = document.getElementById('profEditName').value.trim();
+    const age = parseInt(document.getElementById('profEditAge').value) || 0;
+    const gender = document.getElementById('profEditGender').value;
+    const phone = document.getElementById('profEditPhone').value.trim();
+    if (!name) { showMsg('profile', '请输入真实姓名', false); return; }
+    if (!age || age <= 0 || age > 150) { showMsg('profile', '请输入有效年龄', false); return; }
+    if (!phone || phone.length < 11) { showMsg('profile', '请输入有效的11位手机号', false); return; }
+    const p = new URLSearchParams();
+    p.append('id', userInfo.id); p.append('name', name); p.append('age', age);
+    p.append('gender', gender); p.append('phone', phone);
+    try {
+        const r = await (await fetch('/api/users', { method: 'PUT', headers: {'Content-Type':'application/x-www-form-urlencoded'}, body: p })).json();
+        showMsg('profile', r.message, r.success);
+        if (r.success) {
+            userInfo.name = name; userInfo.age = age; userInfo.gender = gender; userInfo.phone = phone;
+            sessionStorage.setItem('userInfo', JSON.stringify(userInfo));
+            document.getElementById('topbarUserName').textContent = '□ ' + name + ' (储户)';
+        }
+    } catch(e) { showMsg('profile', '网络错误', false); }
+}
+
+// ==================== 弹窗 ====================
+function openModal(type) {
+    document.getElementById('modal-' + type).classList.add('show');
+    clearMsg(type);
+}
+function closeModal(type) { document.getElementById('modal-' + type).classList.remove('show'); }
+function showMsg(type, text, ok) {
+    const el = document.getElementById('msg-' + type) || document.getElementById('msg-' + type + '-inline');
+    if (!el) return;
+    el.textContent = text; el.className = 'msg show ' + (ok ? 'success' : 'error');
+}
+function clearMsg(type) {
+    const el = document.getElementById('msg-' + type) || document.getElementById('msg-' + type + '-inline');
+    if (el) { el.textContent = ''; el.className = 'msg'; }
+}
+
+// 点击遮罩关闭
+document.querySelectorAll('.modal-overlay').forEach(m => {
+    m.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('show'); });
+});
+
+// ==================== 存款 ====================
+async function doDeposit() {
+    const amt = parseFloat(document.getElementById('inpDepositAmount').value);
+    if (!amt || amt <= 0) { showMsg('deposit', '请输入有效金额', false); return; }
+    const p = new URLSearchParams(); p.append('userId', userInfo.id); p.append('amount', amt);
+    try {
+        const r = await (await fetch('/api/deposit', { method: 'POST', headers: {'Content-Type':'application/x-www-form-urlencoded'}, body: p })).json();
+        showMsg('deposit', r.message, r.success);
+        if (r.success) { await refreshBalance(); loadDashBills(); document.getElementById('inpDepositAmount').value = ''; document.getElementById('inpDepositMethod').value = '现金'; document.getElementById('inpDepositNote').value = ''; }
+    } catch(e) { showMsg('deposit', '网络错误', false); }
+}
+
+// ==================== 取款 ====================
+async function doWithdraw() {
+    const amt = parseFloat(document.getElementById('inpWithdrawAmount').value);
+    if (!amt || amt <= 0) { showMsg('withdraw', '请输入有效金额', false); return; }
+    const p = new URLSearchParams(); p.append('userId', userInfo.id); p.append('amount', amt);
+    try {
+        const r = await (await fetch('/api/withdraw', { method: 'POST', headers: {'Content-Type':'application/x-www-form-urlencoded'}, body: p })).json();
+        showMsg('withdraw', r.message, r.success);
+        if (r.success) { await refreshBalance(); loadDashBills(); document.getElementById('inpWithdrawAmount').value = ''; }
+    } catch(e) { showMsg('withdraw', '网络错误', false); }
+}
+
+// ==================== 重置 ====================
+function resetDeposit() {
+    document.getElementById('inpDepositAmount').value = '';
+    document.getElementById('inpDepositMethod').value = '现金';
+    document.getElementById('inpDepositNote').value = '';
+    clearMsg('deposit');
+}
+function resetWithdraw() {
+    document.getElementById('inpWithdrawAmount').value = '';
+    document.getElementById('inpWithdrawMethod').value = '现金';
+    clearMsg('withdraw');
+}
+
+// ==================== 转账 ====================
+async function doTransfer() {
+    const toCard = document.getElementById('inpTransferToAccount').value.trim();
+    const toName = document.getElementById('inpTransferToName').value.trim();
+    const amt = parseFloat(document.getElementById('inpTransferAmount').value);
+    const note = document.getElementById('inpTransferNote').value.trim();
+    if (!toCard) { showMsg('transfer', '请输入收款方银行卡号', false); return; }
+    if (!toName) { showMsg('transfer', '请输入收款方姓名', false); return; }
+    if (!amt || amt <= 0) { showMsg('transfer', '请输入有效金额', false); return; }
+    if (amt > (userInfo.money || 0)) { showMsg('transfer', '余额不足', false); return; }
+    const p = new URLSearchParams(); p.append('fromId', userInfo.id); p.append('toCard', toCard); p.append('toName', toName); p.append('amount', amt);
+    if (note) p.append('note', note);
+    try {
+        const r = await (await fetch('/api/transfer', { method: 'POST', headers: {'Content-Type':'application/x-www-form-urlencoded'}, body: p })).json();
+        showMsg('transfer', r.message, r.success);
+        if (r.success) { await refreshBalance(); loadDashBills(); resetTransfer(); }
+    } catch(e) { showMsg('transfer', '网络错误', false); }
+}
+function resetTransfer() {
+    document.getElementById('inpTransferToAccount').value = '';
+    document.getElementById('inpTransferToName').value = '';
+    document.getElementById('inpTransferAmount').value = '';
+    document.getElementById('inpTransferNote').value = '';
+    document.getElementById('transferBalHint').textContent = '¥ ' + (userInfo.money||0).toFixed(2);
+}
+
+// ==================== 改密 ====================
+async function doChangePassword() {
+    const oldPwd = document.getElementById('inpOldPwd').value.trim();
+    const newPwd = document.getElementById('inpNewPwd').value.trim();
+    const confirmPwd = document.getElementById('inpConfirmPwd').value.trim();
+    if (!oldPwd) { showMsg('password', '请输入原密码', false); return; }
+    if (!newPwd || newPwd.length < 6) { showMsg('password', '新密码至少6位', false); return; }
+    if (newPwd !== confirmPwd) { showMsg('password', '两次新密码不一致', false); return; }
+    const p = new URLSearchParams(); p.append('userId', userInfo.id); p.append('oldPassword', oldPwd); p.append('newPassword', newPwd);
+    try {
+        const r = await (await fetch('/api/changePassword', { method: 'POST', headers: {'Content-Type':'application/x-www-form-urlencoded'}, body: p })).json();
+        showMsg('password', r.message, r.success);
+        if (r.success) { document.getElementById('inpOldPwd').value = ''; document.getElementById('inpNewPwd').value = ''; document.getElementById('inpConfirmPwd').value = ''; }
+    } catch(e) { showMsg('password', '网络错误', false); }
+}
+
+// ==================== 交易记录 ====================
+let allBillsData = [];
+
+function getTypeTagClass(type) {
+    if (!type) return '';
+    if (type.includes('存款') || type === '利息') return 'deposit';
+    if (type.includes('取款')) return 'withdraw';
+    if (type.includes('转出')) return 'transfer-out';
+    if (type.includes('转入')) return 'transfer-in';
+    return '';
+}
+
+function renderBillRow(b) {
+    const time = b.createTime ? new Date(b.createTime).toLocaleString('zh-CN') : '-';
+    const isIn = b.type && (b.type.includes('存款') || b.type.includes('转入') || b.type === '利息');
+    const amountClass = isIn ? 'amount-plus' : 'amount-minus';
+    const sign = isIn ? '+' : '-';
+    const tagCls = getTypeTagClass(b.type);
+    const typeLabel = b.type || '-';
+    const otherParty = b.type && b.type.includes('转') ? ('****' + (b.uid || '').toString().slice(-4)) : '——';
+    return `<tr>
+        <td style="font-size:12px;color:var(--text-secondary);">#${b.id || '-'}</td>
+        <td>${time}</td>
+        <td><span class="type-tag ${tagCls}">${typeLabel}</span></td>
+        <td class="${amountClass}">${sign}¥${(b.amount||0).toLocaleString('zh-CN',{minimumFractionDigits:2})}</td>
+        <td>${otherParty}</td>
+        <td><span class="status-badge"><span class="status-dot"></span> 成功</span></td>
+    </tr>`;
+}
+
+function updateBillStats(data) {
+    const total = data.length;
+    let income = 0, expense = 0;
+    data.forEach(b => {
+        const isIn = b.type && (b.type.includes('存款') || b.type.includes('转入') || b.type === '利息');
+        if (isIn) income += (b.amount || 0);
+        else expense += (b.amount || 0);
+    });
+    document.getElementById('billCount').textContent = total;
+    document.getElementById('billIncome').textContent = '¥' + income.toLocaleString('zh-CN', {minimumFractionDigits: 2});
+    document.getElementById('billExpense').textContent = '¥' + expense.toLocaleString('zh-CN', {minimumFractionDigits: 2});
+}
+
+function filterBills() {
+    const typeFilter = document.getElementById('billTypeFilter').value;
+    const dateStart = document.getElementById('billDateStart').value;
+    const dateEnd = document.getElementById('billDateEnd').value;
+    let filtered = [...allBillsData];
+    if (typeFilter !== '全部') {
+        filtered = filtered.filter(b => b.type === typeFilter);
+    }
+    if (dateStart) {
+        const start = new Date(dateStart); start.setHours(0,0,0,0);
+        filtered = filtered.filter(b => b.createTime && new Date(b.createTime) >= start);
+    }
+    if (dateEnd) {
+        const end = new Date(dateEnd); end.setHours(23,59,59,999);
+        filtered = filtered.filter(b => b.createTime && new Date(b.createTime) <= end);
+    }
+    const tbody = document.getElementById('allBillBody');
+    if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-muted">暂无匹配的交易记录</td></tr>'; }
+    else { tbody.innerHTML = filtered.map(renderBillRow).join(''); }
+    updateBillStats(filtered);
+}
+
+function resetBillFilter() {
+    document.getElementById('billTypeFilter').value = '全部';
+    document.getElementById('billDateStart').value = '';
+    document.getElementById('billDateEnd').value = '';
+    filterBills();
+}
+
+// 仪表盘交易（最近6条）
+async function loadDashBills() {
+    try {
+        const r = await (await fetch('/api/bills/' + userInfo.id)).json();
+        const data = (r.data || []).slice(-6).reverse();
+        const tbody = document.getElementById('dashBillBody');
+        if (!data.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-muted">暂无交易记录</td></tr>'; return; }
+        tbody.innerHTML = data.map(renderBillRow).join('');
+    } catch(e) { document.getElementById('dashBillBody').innerHTML = '<tr><td colspan="6" class="text-muted">加载失败</td></tr>'; }
+}
+
+// 全部交易记录
+async function loadAllBills() {
+    try {
+        const r = await (await fetch('/api/bills/' + userInfo.id)).json();
+        allBillsData = (r.data || []).reverse();
+        filterBills();
+    } catch(e) { document.getElementById('allBillBody').innerHTML = '<tr><td colspan="6" class="text-muted">加载失败</td></tr>'; }
+}
+
+// ==================== 退出 ====================
+function logout() { sessionStorage.clear(); window.location.href = '/login.html'; }
+
+// ==================== 初始加载 ====================
+loadDashBills();
+</script>
+</body>
+</html>

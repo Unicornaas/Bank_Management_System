@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="edu.fjut.mybatis.mapper.EmployeeMapper">
+
+    <resultMap id="employeeMap" type="Employee">
+        <id property="id" column="id"/>
+        <result property="username" column="username"/>
+        <result property="password" column="password"/>
+        <result property="name" column="name"/>
+        <result property="gender" column="gender"/>
+        <result property="age" column="age"/>
+        <result property="phone" column="phone"/>
+        <result property="email" column="email"/>
+        <result property="position" column="position"/>
+        <result property="salary" column="salary"/>
+        <result property="branchId" column="branch_id"/>
+        <result property="status" column="status"/>
+        <result property="createTime" column="create_time"/>
+        <result property="branchName" column="branch_name"/>
+    </resultMap>
+
+    <sql id="select">
+        SELECT e.id, e.username, e.password, e.name, e.gender, e.age,
+               e.phone, e.email, e.position, e.salary, e.branch_id,
+               e.status, e.create_time, b.name AS branch_name
+        FROM employee e
+        LEFT JOIN branch b ON e.branch_id = b.id
+    </sql>
+
+    <select id="findAll" resultMap="employeeMap">
+        <include refid="select"/>
+        ORDER BY e.id DESC
+    </select>
+
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM employee
+    </select>
+
+    <select id="findById" parameterType="int" resultMap="employeeMap">
+        <include refid="select"/>
+        WHERE e.id = #{id}
+    </select>
+
+    <insert id="insert" parameterType="Employee">
+        INSERT INTO employee (username, password, name, gender, age, phone, email, position, salary, branch_id, status)
+        VALUES (#{username}, #{password}, #{name}, #{gender}, #{age}, #{phone}, #{email}, #{position}, #{salary}, #{branchId}, #{status})
+    </insert>
+
+    <update id="update" parameterType="Employee">
+        UPDATE employee
+        <set>
+            <if test="username != null">username = #{username},</if>
+            <if test="password != null">password = #{password},</if>
+            <if test="name != null">name = #{name},</if>
+            <if test="gender != null">gender = #{gender},</if>
+            <if test="age != null">age = #{age},</if>
+            <if test="phone != null">phone = #{phone},</if>
+            <if test="email != null">email = #{email},</if>
+            <if test="position != null">position = #{position},</if>
+            <if test="salary != null">salary = #{salary},</if>
+            <if test="branchId != null">branch_id = #{branchId},</if>
+            <if test="status != null">status = #{status},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById" parameterType="int">
+        DELETE FROM employee WHERE id = #{id}
+    </delete>
+
+    <select id="search" parameterType="Employee" resultMap="employeeMap">
+        <include refid="select"/>
+        <where>
+            <if test="name != null and name != ''">
+                AND e.name LIKE CONCAT('%', #{name}, '%')
+            </if>
+            <if test="gender != null and gender != ''">
+                AND e.gender = #{gender}
+            </if>
+            <if test="position != null and position != ''">
+                AND e.position LIKE CONCAT('%', #{position}, '%')
+            </if>
+            <if test="branchId != null">
+                AND e.branch_id = #{branchId}
+            </if>
+            <if test="status != null and status != ''">
+                AND e.status = #{status}
+            </if>
+        </where>
+        ORDER BY e.id DESC
+    </select>
+
+    <select id="findByPage" resultMap="employeeMap">
+        <include refid="select"/>
+        ORDER BY e.id DESC
+        LIMIT #{offset}, #{size}
+    </select>
+
+    <!-- 员工登录 -->
+    <select id="findByUsernameAndPassword" resultMap="employeeMap">
+        <include refid="select"/>
+        WHERE e.username = #{username}
+        AND e.password = #{password}
+    </select>
+
+</mapper>
