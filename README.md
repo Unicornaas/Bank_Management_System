@@ -295,13 +295,3 @@ java -jar target/Mybatis-0.0.1-SNAPSHOT.jar
 4. **CORS** — 未配置跨域；前端作为静态资源由同一 Spring Boot 实例提供服务，因此不影响正常使用。
 5. **前端** — 使用原生 HTML/CSS/JS 编写，未使用 Vue/React/Angular 等框架。
 6. **编码** — `application.properties` 中部分中文注释可能存在编码问题，不影响功能。
-
----
-
-## 📄 许可
-
-本项目为课程实训项目，仅供学习参考。
-
----
-
-*Made with ❤️ by 第八组 — Fujian University of Technology (FJUT)*
